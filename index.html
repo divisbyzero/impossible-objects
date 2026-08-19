@@ -12,8 +12,11 @@
       --muted: #9bb0ae;
       --line: #294348;
       --panel: #102024;
-      --accent: #62dfc5;
-      --gold: #ffbe5a
+      --accent: #67c4ef;
+      --figure: #3188b8;
+      --figure-edge: #b8e4f7;
+      --figure-fill: rgba(49, 136, 184, .14);
+      --axis: #f2b35b
     }
 
     * {
@@ -296,7 +299,7 @@
         content: "";
         position: absolute;
         inset: 12px;
-        border: 1px solid rgba(98, 223, 197, .12);
+        border: 1px solid rgba(103, 196, 239, .14);
         pointer-events: none
       }
 
@@ -314,22 +317,11 @@
       .preview line,
       .preview polygon,
       .preview polyline {
-        fill: rgba(98, 223, 197, .11);
-        stroke: var(--accent);
+        fill: var(--figure-fill);
+        stroke: var(--figure-edge);
         stroke-width: 5;
         vector-effect: non-scaling-stroke;
         stroke-linejoin: round
-      }
-
-      .back .preview path,
-      .back .preview circle,
-      .back .preview rect,
-      .back .preview ellipse,
-      .back .preview line,
-      .back .preview polygon,
-      .back .preview polyline {
-        fill: rgba(243, 166, 93, .1);
-        stroke: #f3a65d
       }
 
       .controls {
@@ -353,6 +345,18 @@
 
       .controls label.chk input {
         accent-color: var(--accent)
+      }
+
+      .transform-controls {
+        display: flex;
+        flex-basis: 100%;
+        gap: 8px;
+        flex-wrap: wrap
+      }
+
+      .controls .file-control {
+        flex: 0 0 100%;
+        max-width: none
       }
 
       select,
@@ -433,7 +437,7 @@
         pointer-events: none
       }
 
-      .height-control {
+      .scene-controls {
         position: absolute;
         right: 16px;
         bottom: 12px;
@@ -448,12 +452,19 @@
         font: 11px ui-sans-serif, system-ui, sans-serif
       }
 
-      .height-control label {
+      .range-control {
+        display: flex;
+        align-items: center;
+        gap: 7px
+      }
+
+      .range-control label,
+      .range-control output {
         color: #b1c5c6;
         white-space: nowrap
       }
 
-      .height-control input {
+      .range-control input {
         width: clamp(90px, 12vw, 150px);
         accent-color: var(--accent)
       }
@@ -560,21 +571,25 @@
         <article class="panel front">
           <div class="panel-head"><strong>Front view</strong><span id="frontName">Arrow 3</span></div>
           <div class="preview" id="frontPreview"></div>
-          <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input id="frontFile"
+          <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input class="file-control" id="frontFile"
               type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG">
-            <label class="chk"><input type="checkbox" id="frontFlipH"> Flip H</label>
-            <label class="chk"><input type="checkbox" id="frontFlipV"> Flip V</label>
-            <label class="chk"><input type="checkbox" id="frontRotate180"> 180°</label>
+            <div class="transform-controls">
+              <label class="chk"><input type="checkbox" id="frontFlipV"> Flip V</label>
+              <label class="chk"><input type="checkbox" id="frontFlipH"> Flip H</label>
+              <label class="chk"><input type="checkbox" id="frontRotate180"> 180°</label>
+            </div>
           </div>
         </article>
         <article class="panel back">
-          <div class="panel-head"><strong>Back view</strong><span id="backName">Car</span></div>
+          <div class="panel-head"><strong>Rear view</strong><span id="backName">Car</span></div>
           <div class="preview" id="backPreview"></div>
-          <div class="controls"><select id="backSelect" aria-label="Back SVG"></select><input id="backFile" type="file"
-              accept="image/svg+xml,.svg" aria-label="Upload back SVG">
-            <label class="chk"><input type="checkbox" id="backFlipH"> Flip H</label>
-            <label class="chk"><input type="checkbox" id="backFlipV"> Flip V</label>
-            <label class="chk"><input type="checkbox" id="backRotate180"> 180°</label>
+          <div class="controls"><select id="backSelect" aria-label="Rear SVG"></select><input class="file-control" id="backFile" type="file"
+              accept="image/svg+xml,.svg" aria-label="Upload rear SVG">
+            <div class="transform-controls">
+              <label class="chk"><input type="checkbox" id="backFlipV"> Flip V</label>
+              <label class="chk"><input type="checkbox" id="backFlipH"> Flip H</label>
+              <label class="chk"><input type="checkbox" id="backRotate180"> 180°</label>
+            </div>
           </div>
         </article>
       </section>
@@ -583,18 +598,18 @@
         <div class="stage" id="stageFront">
           <canvas id="sceneFront" class="scene-canvas"
             aria-label="Interactive 3D impossible cylinder preview, front view"></canvas>
-          <div class="hud"><span><b id="meshInfoFront">248 samples</b> / depth-tested mesh</span><span>FRONT VIEW</span>
-          </div>
           <div class="legend">Drag horizontally to orbit · wheel or pinch to zoom</div>
         </div>
         <div class="stage" id="stageBack">
           <canvas id="sceneBack" class="scene-canvas"
             aria-label="Interactive 3D impossible cylinder preview, back view"></canvas>
-          <div class="hud"><span><b id="meshInfoBack">248 samples</b> / depth-tested mesh</span><span>BACK VIEW</span>
-          </div>
         </div>
-        <div class="height-control"><label for="heightSlider">Height</label><input id="heightSlider" type="range"
-            min="0" max="1.5" step="0.01" value="0" aria-label="Object height"></div>
+        <div class="scene-controls">
+          <div class="range-control"><label for="sampleSlider">Samples</label><input id="sampleSlider" type="range"
+              min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output id="sampleValue">248</output></div>
+          <div class="range-control"><label for="heightSlider">Height</label><input id="heightSlider" type="range"
+              min="0" max="1.5" step="0.01" value="0" aria-label="Object height"></div>
+        </div>
       </section>
     </main>
   </div>
@@ -625,7 +640,7 @@
     import * as THREE from './three.module.js';
     const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left).svg', 'Arrow (up).svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Egg.svg', 'Fire.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Rabbit.svg', 'Sneaker.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
     const DEMOS = { 'Arrow 3.svg': { viewBox: '0 0 612 792', markup: '<path d="M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z"/>' }, 'Car.svg': { viewBox: '0 0 612 792', markup: '<path d="M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z"/>' } };
-    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false, rotate180: false }, back: { flipH: false, flipV: false, rotate180: false } }, camera: { distance: 1.4, zoom: 1, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false, rotate180: false }, back: { flipH: false, flipV: false, rotate180: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
     const $ = id => document.getElementById(id), sceneFront = $('sceneFront'), sceneBack = $('sceneBack');
     let rendererFront, rendererBack, cameraFront, cameraBack, world, meshGroup, axisGroup, topEdgeGroup, resizeObserver;
     function options() { for (const id of ['frontSelect', 'backSelect']) $(id).innerHTML = SVG_FILES.map(n => `<option value="${n}">${n.replace(/\.svg$/i, '')}</option>`).join(''); $('frontSelect').value = 'Circle.svg'; $('backSelect').value = 'Square (Diamond).svg'; }
@@ -668,9 +683,46 @@
     }
     function choose(which, name) { const token = ++state.loadToken[which]; if (DEMOS[name]) return show(which, DEMOS[name], name); $('status').textContent = 'LOADING / ' + name; fetch(`curve_defs/svg/${encodeURIComponent(name)}`).then(r => { if (!r.ok) throw Error(`HTTP ${r.status}`); return r.text() }).then(t => { if (token === state.loadToken[which]) show(which, parse(t), name) }).catch(error => { if (token === state.loadToken[which]) $('status').textContent = 'COULD NOT LOAD / ' + name }) }
     function upload(which, file) { if (!file) return; const reader = new FileReader(); reader.onload = () => { try { show(which, parse(reader.result), file.name) } catch (e) { $('status').textContent = e.message.toUpperCase() } }; reader.readAsText(file) }
-    function sample(data, count = 248, baseRotate180 = false, userFlags = {}) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.innerHTML = data.markup; document.body.appendChild(svg); const shape = svg.querySelector(SHAPE_SELECTOR), n = Math.max(count * 8, 2000), total = shape.getTotalLength(), raw = []; for (let i = 0; i < n; i++) { const p = shapePoint(shape, total * i / n); raw.push([p.x, p.y]) } svg.remove(); let minX = Infinity, maxX = -Infinity; for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]) } const span = maxX - minX || 1, minY = Math.min(...raw.map(p => p[1])), maxY = Math.max(...raw.map(p => p[1])), scale = .65 / span, cy = (minY + maxY) / 2, normalized = raw.map(p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale]); let negateX = baseRotate180, negateY = baseRotate180; if (userFlags.flipH) negateX = !negateX; if (userFlags.flipV) negateY = !negateY; if (userFlags.rotate180) { negateX = !negateX; negateY = !negateY } if (negateX || negateY) normalized.forEach(p => { if (negateX) p[0] *= -1; if (negateY) p[1] *= -1 }); const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]), yAt = (x, upper) => { const hits = []; for (const [[x1, y1], [x2, y2]] of segments) { if (Math.abs(x2 - x1) < 1e-9) { if (Math.abs(x - x1) < 1e-5) hits.push(y1, y2) } else if (x >= Math.min(x1, x2) && x <= Math.max(x1, x2)) { const t = (x - x1) / (x2 - x1); hits.push(y1 + t * (y2 - y1)) } } return hits.length ? (upper ? Math.max(...hits) : Math.min(...hits)) : normalized.reduce((a, p) => Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a, normalized[0])[1] }; const half = Math.floor(count / 2), top = [], bottom = []; for (let i = 0; i < half; i++) { const t = i / (half - 1), rx = .325 - t * .65, lx = -.325 + t * .65; top.push([rx, yAt(rx, true)]); bottom.push([lx, yAt(lx, false)]) } return top.concat(bottom.slice(1), top.slice(0, 1)) }
-    function build() { if (!state.front || !state.back || !rendererFront) return; const a = sample(state.front, 248, false, state.transform.front), b = sample(state.back, 248, true, state.transform.back), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('meshInfoFront').textContent = $('meshInfoBack').textContent = (pos.length / 3) + ' samples'; $('status').textContent = 'LIVE / ' + $('frontName').textContent + ' + ' + $('backName').textContent; rebuildGeometry(); }
-    function rebuildGeometry() { meshGroup.clear(); axisGroup.clear(); topEdgeGroup.clear(); const material = new THREE.MeshStandardMaterial({ color: 0x3b958c, roughness: .48, metalness: .08, side: THREE.DoubleSide }); const renderHeight = Math.max(state.height, .015), positions = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) { const a = i * 3, b = (i + 1) * 3, topA = [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]], topB = [state.mesh[b], state.mesh[b + 1], state.mesh[b + 2]], bottomA = [topA[0], topA[1], topA[2] - renderHeight], bottomB = [topB[0], topB[1], topB[2] - renderHeight]; positions.push(...topA, ...topB, ...bottomB, ...topA, ...bottomB, ...bottomA) } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material)); const topPoints = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) topPoints.push(new THREE.Vector3(state.mesh[i * 3], state.mesh[i * 3 + 1], state.mesh[i * 3 + 2])); const topCurve = new THREE.CatmullRomCurve3(topPoints, true, 'centripetal'); topEdgeGroup.add(new THREE.Mesh(new THREE.TubeGeometry(topCurve, Math.max(64, topPoints.length * 2), .005, 8, true), new THREE.MeshBasicMaterial({ color: 0xb9fff0 }))); const length = Math.max(.65, state.height, .35) * 4, origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xffbe5a }); for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, length), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) } }
+    function sample(data, count = 248, baseRotate180 = false, userFlags = {}) {
+      const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', data.viewBox);
+      svg.innerHTML = data.markup;
+      document.body.appendChild(svg);
+      const shape = svg.querySelector(SHAPE_SELECTOR), n = Math.max(count * 8, 2000), total = shape.getTotalLength(), raw = [];
+      for (let i = 0; i < n; i++) { const p = shapePoint(shape, total * i / n); raw.push([p.x, p.y]) }
+      svg.remove();
+      let minX = Infinity, maxX = -Infinity;
+      for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]) }
+      const span = maxX - minX || 1, minY = Math.min(...raw.map(p => p[1])), maxY = Math.max(...raw.map(p => p[1])), scale = .65 / span, cy = (minY + maxY) / 2, normalized = raw.map(p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale]);
+      let negateX = baseRotate180, negateY = baseRotate180;
+      if (userFlags.flipH) negateX = !negateX;
+      if (userFlags.flipV) negateY = !negateY;
+      if (userFlags.rotate180) { negateX = !negateX; negateY = !negateY }
+      if (negateX || negateY) normalized.forEach(p => { if (negateX) p[0] *= -1; if (negateY) p[1] *= -1 });
+      const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]);
+      const yAt = (x, upper) => {
+        const hits = [];
+        for (const [[x1, y1], [x2, y2]] of segments) {
+          if (Math.abs(x2 - x1) < 1e-9) {
+            if (Math.abs(x - x1) < 1e-5) hits.push(y1, y2);
+          } else if (x >= Math.min(x1, x2) && x <= Math.max(x1, x2)) {
+            const t = (x - x1) / (x2 - x1);
+            hits.push(y1 + t * (y2 - y1));
+          }
+        }
+        return hits.length ? (upper ? Math.max(...hits) : Math.min(...hits)) : normalized.reduce((a, p) => Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a, normalized[0])[1];
+      };
+      const half = Math.floor(count / 2), top = [], bottom = [];
+      for (let i = 0; i < half; i++) {
+        const theta = Math.PI * i / (half - 1), x = .325 * Math.cos(theta);
+        top.push([x, yAt(x, true)]);
+        bottom.push([-x, yAt(-x, false)]);
+      }
+      return top.concat(bottom.slice(1), top.slice(0, 1));
+    }
+    function build() { if (!state.front || !state.back || !rendererFront) return; const a = sample(state.front, state.samples, false, state.transform.front), b = sample(state.back, state.samples, true, state.transform.back), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('status').textContent = $('frontName').textContent + ' + ' + $('backName').textContent; rebuildGeometry(); }
+    function addEdgeTube(points) { const radius = .005, material = new THREE.MeshBasicMaterial({ color: 0xb8e4f7 }), cylinders = new THREE.InstancedMesh(new THREE.CylinderGeometry(radius, radius, 1, 8), material, points.length), joints = new THREE.InstancedMesh(new THREE.SphereGeometry(radius, 8, 6), material, points.length), up = new THREE.Vector3(0, 1, 0), matrix = new THREE.Matrix4(); for (let i = 0; i < points.length; i++) { const start = points[i], end = points[(i + 1) % points.length], direction = end.clone().sub(start), midpoint = start.clone().addScaledVector(direction, .5), rotation = new THREE.Quaternion().setFromUnitVectors(up, direction.clone().normalize()); matrix.compose(midpoint, rotation, new THREE.Vector3(1, direction.length(), 1)); cylinders.setMatrixAt(i, matrix); matrix.makeTranslation(start.x, start.y, start.z); joints.setMatrixAt(i, matrix) } cylinders.instanceMatrix.needsUpdate = joints.instanceMatrix.needsUpdate = true; topEdgeGroup.add(cylinders, joints) }
+    function rebuildGeometry() { meshGroup.clear(); axisGroup.clear(); topEdgeGroup.clear(); const material = new THREE.MeshStandardMaterial({ color: 0x3188b8, roughness: .48, metalness: .08, side: THREE.DoubleSide }); const renderHeight = Math.max(state.height, .015), positions = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) { const a = i * 3, b = (i + 1) * 3, topA = [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]], topB = [state.mesh[b], state.mesh[b + 1], state.mesh[b + 2]], bottomA = [topA[0], topA[1], topA[2] - renderHeight], bottomB = [topB[0], topB[1], topB[2] - renderHeight]; positions.push(...topA, ...topB, ...bottomB, ...topA, ...bottomB, ...bottomA) } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material)); const topPoints = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) topPoints.push(new THREE.Vector3(state.mesh[i * 3], state.mesh[i * 3 + 1], state.mesh[i * 3 + 2])); addEdgeTube(topPoints); const length = Math.max(.65, state.height, .35) * 4, origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xf2b35b }); for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, length), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) } }
     const SCAD_MODULES = `
 // Lowest level reached by the figure: lowest curve point, minus the ribbon
 // drop (ribbon_thickness) and the sphere radius used to sweep the ribbon.
@@ -840,7 +892,7 @@ ${SCAD_MODULES}` }
     function resize() { if (!rendererFront) return; resizeOne(cameraFront, sceneFront, rendererFront); resizeOne(cameraBack, sceneBack, rendererBack); updateCamera() }
     function render() { updateCamera(); requestAnimationFrame(render) }
     function wireOrbit(canvasEl) { canvasEl.onpointerdown = e => { canvasEl.setPointerCapture(e.pointerId); canvasEl.classList.add('dragging'); state.drag = { x: e.clientX } }; canvasEl.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; canvasEl.onpointerup = canvasEl.onpointercancel = () => { state.drag = null; canvasEl.classList.remove('dragging') }; canvasEl.onwheel = e => { e.preventDefault(); state.camera.zoom = Math.max(.3, Math.min(8, state.camera.zoom * Math.exp(-e.deltaY * .001))) } }
-    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV'], ['Rotate180', 'rotate180']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV'], ['Rotate180', 'rotate180']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
