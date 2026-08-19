@@ -631,12 +631,42 @@
     let rendererFront, rendererBack, cameraFront, cameraBack, world, meshGroup, axisGroup, topEdgeGroup, resizeObserver;
     function options() { for (const id of ['frontSelect', 'backSelect']) $(id).innerHTML = SVG_FILES.map(n => `<option value="${n}">${n.replace(/\.svg$/i, '')}</option>`).join(''); $('frontSelect').value = 'Circle.svg'; $('backSelect').value = 'Square (Diamond).svg'; }
     const SHAPE_SELECTOR = 'path, circle, rect, ellipse, line, polygon, polyline';
-    function shapePoint(el, len) { const p = el.getPointAtLength(len), t = el.transform && el.transform.baseVal.numberOfItems && el.transform.baseVal.consolidate(); if (!t) return p; const m = t.matrix; return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f } }
+    function shapePoint(el, len) { const p = el.getPointAtLength(len), m = el.getCTM(); if (!m) return p; return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f } }
+    function svgIntrinsicBox(root) { const vb = root.getAttribute('viewBox'); if (vb) return vb; const w = parseFloat(root.getAttribute('width')) || 100, h = parseFloat(root.getAttribute('height')) || 100; return `0 0 ${w} ${h}` }
+    function isBackgroundRect(el, vw, vh) { if (el.tagName.toLowerCase() !== 'rect') return false; const x = parseFloat(el.getAttribute('x')) || 0, y = parseFloat(el.getAttribute('y')) || 0, w = parseFloat(el.getAttribute('width')) || 0, h = parseFloat(el.getAttribute('height')) || 0; return x <= vw * .01 && y <= vh * .01 && w >= vw * .98 && h >= vh * .98 }
+    function visibleCandidates(root, viewBox) { const [, , vw, vh] = viewBox.split(/\s+/).map(Number); return Array.from(root.querySelectorAll(SHAPE_SELECTOR)).filter(el => !el.closest('defs, clipPath, symbol, mask, pattern') && !isBackgroundRect(el, vw, vh)) }
+    function sampleSegmentPoints(el, count = 400) { const total = el.getTotalLength(), pts = []; for (let i = 0; i <= count; i++) { const p = shapePoint(el, total * i / count); pts.push([p.x, p.y]) } return pts }
+    function stitchSegments(segments) { const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]), eps = 1e-6, used = segments.map(() => false); let chain = segments[0].slice(); used[0] = true; for (let remaining = segments.length - 1; remaining > 0; remaining--) { const tail = chain[chain.length - 1]; let best = -1, bestFlip = false, bestDist = Infinity; for (let i = 0; i < segments.length; i++) { if (used[i]) continue; const seg = segments[i], dStart = dist(tail, seg[0]), dEnd = dist(tail, seg[seg.length - 1]); if (dStart < bestDist) { bestDist = dStart; best = i; bestFlip = false } if (dEnd < bestDist) { bestDist = dEnd; best = i; bestFlip = true } } const pts = bestFlip ? segments[best].slice().reverse() : segments[best]; for (const p of pts) if (dist(chain[chain.length - 1], p) > eps) chain.push(p); used[best] = true } return chain }
+    function buildClosedPathD(points) { return 'M ' + points.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(' L ') + ' Z' }
     function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; svg.innerHTML = data.markup; document.body.appendChild(svg); try { const b = svg.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
     function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.markup}</svg>` }
     function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); if (f.rotate180) parts.push('rotate(180deg)'); return parts.join(' ') }
     function show(which, data, name) { state[which] = data; const svg = $(`${which}Preview`); svg.innerHTML = preview(data); svg.firstElementChild.style.transform = previewTransformCSS(which); svg.firstElementChild.style.transformOrigin = 'center'; $(`${which}Name`).textContent = name.replace(/\.svg$/i, ''); build() }
-    function parse(text) { const doc = new DOMParser().parseFromString(text, 'image/svg+xml'), shape = doc.querySelector(SHAPE_SELECTOR); if (!shape) throw Error('SVG needs a path, circle, rect, ellipse, line, or polygon'); return { viewBox: doc.documentElement.getAttribute('viewBox') || '0 0 100 100', markup: shape.outerHTML } }
+    function parse(text) {
+      const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+      if (doc.querySelector('parsererror')) throw Error('Could not parse this file as SVG');
+      const viewBox = svgIntrinsicBox(doc.documentElement);
+      // Render into a live, attached SVG (matching the source's own nesting/transforms) so
+      // getCTM()/getTotalLength() resolve correctly, then look for the actual curve(s) -
+      // ignoring <defs>/<clipPath> content and the full-canvas background rect that
+      // GeoGebra (and similar tools) always include in their SVG export.
+      const ns = 'http://www.w3.org/2000/svg', measure = document.createElementNS(ns, 'svg');
+      measure.setAttribute('viewBox', viewBox);
+      measure.style.position = 'absolute';
+      measure.style.visibility = 'hidden';
+      measure.innerHTML = doc.documentElement.innerHTML;
+      document.body.appendChild(measure);
+      try {
+        const candidates = visibleCandidates(measure, viewBox);
+        if (!candidates.length) throw Error('SVG needs a visible path, circle, rect, ellipse, line, or polygon');
+        if (candidates.length === 1) return { viewBox, markup: candidates[0].outerHTML };
+        // Multiple curve pieces (e.g. several GeoGebra objects making up one outline):
+        // sample each, then stitch them end-to-end into a single closed loop, snapping
+        // to whichever free endpoint is nearest even if the pieces don't meet exactly.
+        const chain = stitchSegments(candidates.map(el => sampleSegmentPoints(el)));
+        return { viewBox, markup: `<path d="${buildClosedPathD(chain)}"/>` };
+      } finally { measure.remove() }
+    }
     function choose(which, name) { const token = ++state.loadToken[which]; if (DEMOS[name]) return show(which, DEMOS[name], name); $('status').textContent = 'LOADING / ' + name; fetch(`curve_defs/svg/${encodeURIComponent(name)}`).then(r => { if (!r.ok) throw Error(`HTTP ${r.status}`); return r.text() }).then(t => { if (token === state.loadToken[which]) show(which, parse(t), name) }).catch(error => { if (token === state.loadToken[which]) $('status').textContent = 'COULD NOT LOAD / ' + name }) }
     function upload(which, file) { if (!file) return; const reader = new FileReader(); reader.onload = () => { try { show(which, parse(reader.result), file.name) } catch (e) { $('status').textContent = e.message.toUpperCase() } }; reader.readAsText(file) }
     function sample(data, count = 248, baseRotate180 = false, userFlags = {}) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.innerHTML = data.markup; document.body.appendChild(svg); const shape = svg.querySelector(SHAPE_SELECTOR), n = Math.max(count * 8, 2000), total = shape.getTotalLength(), raw = []; for (let i = 0; i < n; i++) { const p = shapePoint(shape, total * i / n); raw.push([p.x, p.y]) } svg.remove(); let minX = Infinity, maxX = -Infinity; for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]) } const span = maxX - minX || 1, minY = Math.min(...raw.map(p => p[1])), maxY = Math.max(...raw.map(p => p[1])), scale = .65 / span, cy = (minY + maxY) / 2, normalized = raw.map(p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale]); let negateX = baseRotate180, negateY = baseRotate180; if (userFlags.flipH) negateX = !negateX; if (userFlags.flipV) negateY = !negateY; if (userFlags.rotate180) { negateX = !negateX; negateY = !negateY } if (negateX || negateY) normalized.forEach(p => { if (negateX) p[0] *= -1; if (negateY) p[1] *= -1 }); const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]), yAt = (x, upper) => { const hits = []; for (const [[x1, y1], [x2, y2]] of segments) { if (Math.abs(x2 - x1) < 1e-9) { if (Math.abs(x - x1) < 1e-5) hits.push(y1, y2) } else if (x >= Math.min(x1, x2) && x <= Math.max(x1, x2)) { const t = (x - x1) / (x2 - x1); hits.push(y1 + t * (y2 - y1)) } } return hits.length ? (upper ? Math.max(...hits) : Math.min(...hits)) : normalized.reduce((a, p) => Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a, normalized[0])[1] }; const half = Math.floor(count / 2), top = [], bottom = []; for (let i = 0; i < half; i++) { const t = i / (half - 1), rx = .325 - t * .65, lx = -.325 + t * .65; top.push([rx, yAt(rx, true)]); bottom.push([lx, yAt(lx, false)]) } return top.concat(bottom.slice(1), top.slice(0, 1)) }
