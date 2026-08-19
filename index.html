@@ -33,8 +33,15 @@
         overflow: auto
       }
 
+      html,
+      body {
+        height: 100%;
+        overflow: hidden
+      }
+
       .app {
-        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
         display: grid;
         grid-template-columns: minmax(200px, 24%) 8px minmax(0, 1fr);
         grid-template-rows: auto 1fr;
@@ -80,6 +87,7 @@
       .left {
         grid-area: left;
         min-width: 0;
+        min-height: 0;
         display: grid;
         grid-template-rows: 1fr 1fr;
         gap: 14px;
@@ -107,7 +115,7 @@
       }
 
       .panel {
-        min-height: 160px;
+        min-height: 0;
         display: grid;
         grid-template-rows: auto 1fr auto;
         overflow: hidden;
@@ -233,6 +241,7 @@
       .stages {
         grid-area: stages;
         min-width: 0;
+        min-height: 0;
         position: relative;
         display: grid;
         grid-template-rows: 1fr 1fr;
@@ -241,6 +250,7 @@
 
       .stage {
         min-width: 0;
+        min-height: 0;
         position: relative;
         overflow: hidden;
         border: 1px solid var(--line);
@@ -322,7 +332,17 @@
       }
 
       @media(max-width:760px) {
+
+        html,
+        body {
+          height: auto;
+          overflow: auto
+        }
+
         .app {
+          height: auto;
+          min-height: 100vh;
+          overflow: visible;
           display: flex;
           flex-direction: column;
           padding: 10px;
@@ -441,7 +461,7 @@
     import * as THREE from './three.module.js';
     const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left)).svg', 'Arrow (up).svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Egg.svg', 'Fire.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Rabbit.svg', 'Sneaker.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
     const DEMOS = { 'Arrow 3.svg': { viewBox: '0 0 612 792', markup: '<path d="M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z"/>' }, 'Car.svg': { viewBox: '0 0 612 792', markup: '<path d="M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z"/>' } };
-    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false, rotate180: false }, back: { flipH: false, flipV: false, rotate180: false } }, camera: { distance: 1.4, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false, rotate180: false }, back: { flipH: false, flipV: false, rotate180: false } }, camera: { distance: 1.4, zoom: 1, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
     const $ = id => document.getElementById(id), sceneFront = $('sceneFront'), sceneBack = $('sceneBack');
     let rendererFront, rendererBack, cameraFront, cameraBack, world, meshGroup, axisGroup, topEdgeGroup, resizeObserver;
     function options() { for (const id of ['frontSelect', 'backSelect']) $(id).innerHTML = SVG_FILES.map(n => `<option value="${n}">${n.replace(/\.svg$/i, '')}</option>`).join(''); $('frontSelect').value = 'Circle.svg'; $('backSelect').value = 'Square (Diamond).svg'; }
@@ -458,11 +478,11 @@
     function build() { if (!state.front || !state.back || !rendererFront) return; const a = sample(state.front, 248, false, state.transform.front), b = sample(state.back, 248, true, state.transform.back), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('meshInfoFront').textContent = $('meshInfoBack').textContent = (pos.length / 3) + ' samples'; $('status').textContent = 'LIVE / ' + $('frontName').textContent + ' + ' + $('backName').textContent; rebuildGeometry(); }
     function rebuildGeometry() { meshGroup.clear(); axisGroup.clear(); topEdgeGroup.clear(); const material = new THREE.MeshStandardMaterial({ color: 0x3b958c, roughness: .48, metalness: .08, side: THREE.DoubleSide }); const renderHeight = Math.max(state.height, .015), positions = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) { const a = i * 3, b = (i + 1) * 3, topA = [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]], topB = [state.mesh[b], state.mesh[b + 1], state.mesh[b + 2]], bottomA = [topA[0], topA[1], topA[2] - renderHeight], bottomB = [topB[0], topB[1], topB[2] - renderHeight]; positions.push(...topA, ...topB, ...bottomB, ...topA, ...bottomB, ...bottomA) } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material)); const topPoints = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) topPoints.push(new THREE.Vector3(state.mesh[i * 3], state.mesh[i * 3 + 1], state.mesh[i * 3 + 2])); const topCurve = new THREE.CatmullRomCurve3(topPoints, true, 'centripetal'); topEdgeGroup.add(new THREE.Mesh(new THREE.TubeGeometry(topCurve, Math.max(64, topPoints.length * 2), .005, 8, true), new THREE.MeshBasicMaterial({ color: 0xb9fff0 }))); const length = Math.max(.65, state.height, .35) * 4, origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xffbe5a }); for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, length), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) } }
     function camPos(azimuth) { const e = state.camera.elevation, d = state.camera.distance; return new THREE.Vector3(d * Math.cos(e) * Math.sin(azimuth), d * Math.cos(e) * Math.cos(azimuth), d * Math.sin(e)) }
-    function updateCamera() { if (!state.axisOrigin || !rendererFront) return; const target = new THREE.Vector3(...state.axisOrigin); cameraFront.position.copy(target).add(camPos(state.camera.azimuth)); cameraFront.lookAt(target); cameraBack.position.copy(target).add(camPos(state.camera.azimuth + Math.PI)); cameraBack.lookAt(target); rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack) }
+    function updateCamera() { if (!state.axisOrigin || !rendererFront) return; const target = new THREE.Vector3(...state.axisOrigin); cameraFront.position.copy(target).add(camPos(state.camera.azimuth)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix(); cameraBack.position.copy(target).add(camPos(state.camera.azimuth + Math.PI)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix(); rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack) }
     function resizeOne(cam, canvasEl, renderer) { const r = canvasEl.getBoundingClientRect(), aspect = (r.width / r.height) || 1; cam.left = -aspect * 1.05; cam.right = aspect * 1.05; cam.top = 1.05; cam.bottom = -1.05; cam.updateProjectionMatrix(); renderer.setSize(r.width, r.height, false) }
     function resize() { if (!rendererFront) return; resizeOne(cameraFront, sceneFront, rendererFront); resizeOne(cameraBack, sceneBack, rendererBack); updateCamera() }
     function render() { updateCamera(); requestAnimationFrame(render) }
-    function wireOrbit(canvasEl) { canvasEl.onpointerdown = e => { canvasEl.setPointerCapture(e.pointerId); canvasEl.classList.add('dragging'); state.drag = { x: e.clientX } }; canvasEl.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; canvasEl.onpointerup = canvasEl.onpointercancel = () => { state.drag = null; canvasEl.classList.remove('dragging') }; canvasEl.onwheel = e => { e.preventDefault(); state.camera.distance = Math.max(.45, Math.min(30, state.camera.distance * Math.exp(e.deltaY * .001))) } }
+    function wireOrbit(canvasEl) { canvasEl.onpointerdown = e => { canvasEl.setPointerCapture(e.pointerId); canvasEl.classList.add('dragging'); state.drag = { x: e.clientX } }; canvasEl.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; canvasEl.onpointerup = canvasEl.onpointercancel = () => { state.drag = null; canvasEl.classList.remove('dragging') }; canvasEl.onwheel = e => { e.preventDefault(); state.camera.zoom = Math.max(.3, Math.min(8, state.camera.zoom * Math.exp(-e.deltaY * .001))) } }
     function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV'], ['Rotate180', 'rotate180']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
