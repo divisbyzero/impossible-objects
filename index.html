@@ -605,16 +605,15 @@
         <p>Set starting values for the print — everything here stays editable in OpenSCAD, in the code or the Customizer.</p>
       </div>
       <div class="modal-body">
-        <label class="field"><span>Width (mm)</span><input type="number" id="scadWidth" step="1" min="1"></label>
-        <label class="field"><span>Height / ribbon drop (mm)</span><input type="number" id="scadHeight" step="0.5" min="0.1"></label>
-        <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadThickness" step="0.1" min="0.1"></label>
+        <label class="field"><span>Overall width (mm)</span><input type="number" id="scadOverallWidth" step="1" min="1"></label>
+        <label class="field"><span>Ribbon thickness (mm)</span><input type="number" id="scadRibbonThickness" step="0.5" min="0.1"></label>
+        <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadWallThickness" step="0.1" min="0.1"></label>
         <label class="field row"><input type="checkbox" id="scadAddLegs" checked><span>Add three legs</span></label>
         <label class="field"><span>Leg diameter (mm)</span><input type="number" id="scadLegDiameter" step="0.1" min="0.1"></label>
-        <label class="field"><span>Leg length (mm)</span><input type="number" id="scadLegLength" step="0.5" min="0"></label>
+        <label class="field"><span>Leg extension length (mm)</span><input type="number" id="scadLegExtension" step="0.5" min="0"></label>
         <label class="field"><span>Leg flare (mm)</span><input type="number" id="scadLegFlare" step="0.5" min="0"></label>
         <label class="field"><span>Foot height (mm)</span><input type="number" id="scadFootHeight" step="0.5" min="0"></label>
-        <label class="field"><span>Foot width, 90° leg (mm)</span><input type="number" id="scadFootWidth90" step="0.5" min="0"></label>
-        <label class="field"><span>Foot diameter, other legs (mm)</span><input type="number" id="scadFootDiameterOthers" step="0.5" min="0"></label>
+        <label class="field"><span>Foot width (mm)</span><input type="number" id="scadFootWidth" step="0.5" min="0"></label>
       </div>
       <div class="modal-foot">
         <button type="button" class="btn" id="exportCancel">Cancel</button>
@@ -674,8 +673,8 @@
     function rebuildGeometry() { meshGroup.clear(); axisGroup.clear(); topEdgeGroup.clear(); const material = new THREE.MeshStandardMaterial({ color: 0x3b958c, roughness: .48, metalness: .08, side: THREE.DoubleSide }); const renderHeight = Math.max(state.height, .015), positions = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) { const a = i * 3, b = (i + 1) * 3, topA = [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]], topB = [state.mesh[b], state.mesh[b + 1], state.mesh[b + 2]], bottomA = [topA[0], topA[1], topA[2] - renderHeight], bottomB = [topB[0], topB[1], topB[2] - renderHeight]; positions.push(...topA, ...topB, ...bottomB, ...topA, ...bottomB, ...bottomA) } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material)); const topPoints = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) topPoints.push(new THREE.Vector3(state.mesh[i * 3], state.mesh[i * 3 + 1], state.mesh[i * 3 + 2])); const topCurve = new THREE.CatmullRomCurve3(topPoints, true, 'centripetal'); topEdgeGroup.add(new THREE.Mesh(new THREE.TubeGeometry(topCurve, Math.max(64, topPoints.length * 2), .005, 8, true), new THREE.MeshBasicMaterial({ color: 0xb9fff0 }))); const length = Math.max(.65, state.height, .35) * 4, origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xffbe5a }); for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, length), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) } }
     const SCAD_MODULES = `
 // Lowest level reached by the figure: lowest curve point, minus the ribbon
-// drop (height) and the sphere radius used to sweep the ribbon.
-floor_z = min([for (p = curve_points_mm) p[2]]) - height - thickness / 2;
+// drop (ribbon_thickness) and the sphere radius used to sweep the ribbon.
+floor_z = min([for (p = curve_points_mm) p[2]]) - ribbon_thickness - wall_thickness / 2;
 
 // First point where the ray from (cx, cy) at angle a (degrees, measured from
 // the +x axis, so +y is 90) crosses the curve, seen from above. The curve may
@@ -721,14 +720,14 @@ module almond_2d(w, l) {
 // is swept, so the flare bends with the curve instead of running off on a
 // straight tangent.
 module flare_for_leg(points, p) {
-    flare_bottom = p[2] - height - thickness / 2 - leg_flare;  // at the leg
+    flare_bottom = p[2] - ribbon_thickness - wall_thickness / 2 - leg_flare;  // at the leg
     for (i = [0 : len(points) - 2]) {
         d1 = norm([points[i][0] - p[0], points[i][1] - p[1]]);
         d2 = norm([points[i + 1][0] - p[0], points[i + 1][1] - p[1]]);
         bz1 = flare_bottom + d1;
         bz2 = flare_bottom + d2;
-        tz1 = points[i][2] - height;
-        tz2 = points[i + 1][2] - height;
+        tz1 = points[i][2] - ribbon_thickness;
+        tz2 = points[i + 1][2] - ribbon_thickness;
         // Keep going along the curve until the rising 45-degree underside
         // meets the ribbon, so the flare always tapers out to nothing
         // instead of ending in a vertical face where the ribbon climbs.
@@ -740,7 +739,7 @@ module flare_for_leg(points, p) {
                     q = points[j];
                     d = norm([q[0] - p[0], q[1] - p[1]]);
                     bz = flare_bottom + d;          // 45-degree underside
-                    tz = q[2] - height;              // inside the ribbon
+                    tz = q[2] - ribbon_thickness;    // inside the ribbon
                     translate([q[0], q[1], min(bz, tz - 0.01)])
                         cylinder(h = max(tz - bz, 0.01), d = leg_diameter, $fn = 24);
                 }
@@ -749,13 +748,13 @@ module flare_for_leg(points, p) {
 
 // Three legs, placed where vertical half-planes from the xy-center of the
 // shape (one toward +y, the others 120 and 240 degrees around) meet the curve.
-// Legs run from the curve down to leg_length below the figure's lowest point.
+// Legs run from the curve down to leg_extension below the figure's lowest point.
 module legs_for_curve(points) {
     xs = [for (p = points) p[0]];
     ys = [for (p = points) p[1]];
     cx = (min(xs) + max(xs)) / 2;
     cy = (min(ys) + max(ys)) / 2;
-    leg_bottom = floor_z - leg_length;
+    leg_bottom = floor_z - leg_extension;
     for (a = [90, 210, 330]) {
         p = ray_hit(points, cx, cy, a);
 
@@ -769,9 +768,9 @@ module legs_for_curve(points) {
         translate([p[0], p[1], leg_bottom]) {
             if (a == 90)
                 linear_extrude(height = foot_height)
-                    almond_2d(foot_width_90, sqrt(3) * foot_width_90);
+                    almond_2d(foot_width, sqrt(3) * foot_width);
             else
-                cylinder(h = foot_height, d = foot_diameter_others, $fn = 50);
+                cylinder(h = foot_height, d = foot_width, $fn = 50);
         }
     }
 }
@@ -784,11 +783,11 @@ module parametric_ribbon(points) {
         p2 = points[i + 1];
 
         hull() {
-            translate(p1) sphere(r = thickness / 2, $fn = 25);
-            translate([p1[0], p1[1], p1[2] - height]) sphere(r = thickness / 2, $fn = 25);
+            translate(p1) sphere(r = wall_thickness / 2, $fn = 25);
+            translate([p1[0], p1[1], p1[2] - ribbon_thickness]) sphere(r = wall_thickness / 2, $fn = 25);
 
-            translate(p2) sphere(r = thickness / 2, $fn = 25);
-            translate([p2[0], p2[1], p2[2] - height]) sphere(r = thickness / 2, $fn = 25);
+            translate(p2) sphere(r = wall_thickness / 2, $fn = 25);
+            translate([p2[0], p2[1], p2[2] - ribbon_thickness]) sphere(r = wall_thickness / 2, $fn = 25);
         }
     }
 }
@@ -804,16 +803,20 @@ if (add_legs) legs_for_curve(curve_points_mm);
 
 // ===== PARAMETERS =====
 
-width = ${params.width};                          // overall width scale (mm)
-height = ${params.height};                         // ribbon drop / thickness in z (mm)
-thickness = ${params.thickness};                       // wall thickness (mm)
-add_legs = ${params.addLegs};                    // add three legs at 120-degree spacing
-leg_diameter = ${params.legDiameter};                    // leg thickness (mm)
-leg_length = ${params.legLength};                      // extra leg length (mm) below the lowest point of the figure
-leg_flare = ${params.legFlare};                       // how far (mm) each leg flares into the ribbon
-foot_height = ${params.footHeight};                     // height of all three feet
-foot_width_90 = ${params.footWidth90};                   // widest width (mm) of the almond foot on the +y (90-degree) leg
-foot_diameter_others = ${params.footDiameterOthers};            // diameter (mm) of the round feet on the other two legs
+/* [Overall dimensions] */
+overall_width = ${params.overallWidth};     // overall size scale for the whole object (mm) - everything else scales with this
+ribbon_thickness = ${params.ribbonThickness}; // vertical drop of the ribbon band at each point (mm)
+wall_thickness = ${params.wallThickness};      // wall thickness of the ribbon band (mm)
+
+/* [Legs] */
+add_legs = ${params.addLegs};       // add three support legs at 120-degree spacing
+leg_diameter = ${params.legDiameter};       // leg thickness (mm)
+leg_extension = ${params.legExtension};      // how far (mm) the legs extend below the lowest point of the figure
+leg_flare = ${params.legFlare};          // how far (mm) each leg flares into the ribbon where they meet
+
+/* [Feet] */
+foot_height = ${params.footHeight};        // height of all three feet (mm)
+foot_width = ${params.footWidth};         // width/diameter of each foot (mm) - almond-shaped on the marker leg, round on the other two
 
 // ===== CURVE (dimensionless, baked from the web app preview) =====
 
@@ -821,16 +824,16 @@ curve_points = [
 ${scadCurvePoints(state.mesh)}
 ];
 
-// Scale dimensionless points into mm: x,y,z scaled by width.
+// Scale dimensionless points into mm: x,y,z scaled by overall_width.
 curve_points_mm = [
-    for (p = curve_points) [ p[0] * width, p[1] * width, p[2] * width ]
+    for (p = curve_points) [ p[0] * overall_width, p[1] * overall_width, p[2] * overall_width ]
 ];
 ${SCAD_MODULES}` }
     function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name($('frontName').textContent)}-${name($('backName').textContent)}.scad` }
-    function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegDiameter', 'scadLegLength', 'scadLegFlare', 'scadFootHeight', 'scadFootWidth90', 'scadFootDiameterOthers']) $(id).disabled = !on }
-    function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } const width = 100; $('scadWidth').value = width; $('scadHeight').value = state.height > 0 ? +(state.height * width).toFixed(2) : 20; $('scadThickness').value = 3; $('scadAddLegs').checked = true; $('scadLegDiameter').value = 3; $('scadLegLength').value = 8; $('scadLegFlare').value = 2; $('scadFootHeight').value = 2; $('scadFootWidth90').value = 7; $('scadFootDiameterOthers').value = 7; toggleLegFields(); $('exportModal').hidden = false }
+    function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegDiameter', 'scadLegExtension', 'scadLegFlare', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on }
+    function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } const width = 90; $('scadOverallWidth').value = width; $('scadRibbonThickness').value = state.height > 0 ? +(state.height * width).toFixed(2) : 20; $('scadWallThickness').value = 3; $('scadAddLegs').checked = true; $('scadLegDiameter').value = 3; $('scadLegExtension').value = 5; $('scadLegFlare').value = 2; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
     function closeExportModal() { $('exportModal').hidden = true }
-    function downloadScad() { const params = { width: +$('scadWidth').value, height: +$('scadHeight').value, thickness: +$('scadThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legLength: +$('scadLegLength').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth90: +$('scadFootWidth90').value, footDiameterOthers: +$('scadFootDiameterOthers').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
+    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, ribbonThickness: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legExtension: +$('scadLegExtension').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
     function camPos(azimuth) { const e = state.camera.elevation, d = state.camera.distance; return new THREE.Vector3(d * Math.cos(e) * Math.sin(azimuth), d * Math.cos(e) * Math.cos(azimuth), d * Math.sin(e)) }
     function updateCamera() { if (!state.axisOrigin || !rendererFront) return; const target = new THREE.Vector3(...state.axisOrigin); cameraFront.position.copy(target).add(camPos(state.camera.azimuth)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix(); cameraBack.position.copy(target).add(camPos(state.camera.azimuth + Math.PI)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix(); rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack) }
     function resizeOne(cam, canvasEl, renderer) { const r = canvasEl.getBoundingClientRect(), aspect = (r.width / r.height) || 1; cam.left = -aspect * 1.05; cam.right = aspect * 1.05; cam.top = 1.05; cam.bottom = -1.05; cam.updateProjectionMatrix(); renderer.setSize(r.width, r.height, false) }
