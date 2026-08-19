@@ -26,10 +26,10 @@
       min-height: 100%;
       background: #071114;
       color: var(--ink);
-      font-family: Georgia, "Times New Roman", serif camera.up.set(0, 0, 1);
-      resizeObserver=new ResizeObserver(resize);
+      font-family: Georgia, "Times New Roman", serif
+    }
 
-      body {
+    body {
         overflow: auto
       }
 
@@ -78,6 +78,144 @@
         color: var(--accent);
         font: 12px ui-monospace, monospace;
         white-space: nowrap
+      }
+
+      .header-row {
+        display: flex;
+        align-items: center;
+        gap: 14px
+      }
+
+      .btn {
+        color: var(--ink);
+        background: #0b181b;
+        border: 1px solid #35545a;
+        border-radius: 4px;
+        padding: 7px 12px;
+        font: 12px ui-sans-serif, system-ui, sans-serif;
+        cursor: pointer
+      }
+
+      .btn:hover {
+        border-color: var(--accent);
+        color: var(--accent)
+      }
+
+      .btn:disabled {
+        opacity: .45;
+        cursor: not-allowed
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #06211d;
+        font-weight: 600
+      }
+
+      .btn.primary:hover {
+        color: #06211d;
+        opacity: .9
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        background: rgba(4, 10, 12, .72);
+        padding: 20px
+      }
+
+      .modal-overlay[hidden] {
+        display: none
+      }
+
+      .modal {
+        width: min(480px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        background: linear-gradient(145deg, rgba(25, 47, 51, .97), rgba(10, 22, 25, .99));
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, .4)
+      }
+
+      .modal-head {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line)
+      }
+
+      .modal-head h2 {
+        margin: 0 0 4px;
+        font: 400 16px Georgia, serif
+      }
+
+      .modal-head p {
+        margin: 0;
+        color: var(--muted);
+        font: 12px ui-sans-serif, system-ui, sans-serif
+      }
+
+      .modal-body {
+        padding: 14px 18px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 14px
+      }
+
+      .modal-body .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font: 11px ui-sans-serif, system-ui, sans-serif;
+        color: var(--muted)
+      }
+
+      .modal-body .field.span2 {
+        grid-column: 1 / -1
+      }
+
+      .modal-body .field.row {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px
+      }
+
+      .modal-body input[type=number],
+      .modal-body input[type=text] {
+        color: var(--ink);
+        background: #0b181b;
+        border: 1px solid #35545a;
+        border-radius: 4px;
+        padding: 7px 8px;
+        font: 12px ui-sans-serif, system-ui, sans-serif;
+        width: 100%
+      }
+
+      .modal-body input:disabled {
+        opacity: .4
+      }
+
+      .modal-body label.chk {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--ink);
+        font: 12px ui-sans-serif, system-ui, sans-serif
+      }
+
+      .modal-body label.chk input {
+        accent-color: var(--accent)
+      }
+
+      .modal-foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 18px;
+        border-top: 1px solid var(--line)
       }
 
       .workspace {
@@ -412,7 +550,10 @@
         <h1>Make Your Own Impossible Object</h1>
         <p class="subtitle">One object, two silhouettes.</p>
       </div>
-      <div class="status" id="status">READY / WEBGL</div>
+      <div class="header-row">
+        <div class="status" id="status">READY / WEBGL</div>
+        <button type="button" class="btn" id="exportBtn">Export to OpenSCAD</button>
+      </div>
     </header>
     <main class="workspace" id="workspace">
       <section class="left" id="leftPane">
@@ -457,9 +598,33 @@
       </section>
     </main>
   </div>
+  <div class="modal-overlay" id="exportModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+      <div class="modal-head">
+        <h2 id="exportModalTitle">Export to OpenSCAD</h2>
+        <p>Set starting values for the print — everything here stays editable in OpenSCAD, in the code or the Customizer.</p>
+      </div>
+      <div class="modal-body">
+        <label class="field"><span>Width (mm)</span><input type="number" id="scadWidth" step="1" min="1"></label>
+        <label class="field"><span>Height / ribbon drop (mm)</span><input type="number" id="scadHeight" step="0.5" min="0.1"></label>
+        <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadThickness" step="0.1" min="0.1"></label>
+        <label class="field row"><input type="checkbox" id="scadAddLegs" checked><span>Add three legs</span></label>
+        <label class="field"><span>Leg diameter (mm)</span><input type="number" id="scadLegDiameter" step="0.1" min="0.1"></label>
+        <label class="field"><span>Leg length (mm)</span><input type="number" id="scadLegLength" step="0.5" min="0"></label>
+        <label class="field"><span>Leg flare (mm)</span><input type="number" id="scadLegFlare" step="0.5" min="0"></label>
+        <label class="field"><span>Foot height (mm)</span><input type="number" id="scadFootHeight" step="0.5" min="0"></label>
+        <label class="field"><span>Foot width, 90° leg (mm)</span><input type="number" id="scadFootWidth90" step="0.5" min="0"></label>
+        <label class="field"><span>Foot diameter, other legs (mm)</span><input type="number" id="scadFootDiameterOthers" step="0.5" min="0"></label>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn" id="exportCancel">Cancel</button>
+        <button type="button" class="btn primary" id="exportDownload">Download .scad</button>
+      </div>
+    </div>
+  </div>
   <script type="module">
     import * as THREE from './three.module.js';
-    const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left)).svg', 'Arrow (up).svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Egg.svg', 'Fire.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Rabbit.svg', 'Sneaker.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
+    const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left).svg', 'Arrow (up).svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Egg.svg', 'Fire.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Rabbit.svg', 'Sneaker.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
     const DEMOS = { 'Arrow 3.svg': { viewBox: '0 0 612 792', markup: '<path d="M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z"/>' }, 'Car.svg': { viewBox: '0 0 612 792', markup: '<path d="M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z"/>' } };
     const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false, rotate180: false }, back: { flipH: false, flipV: false, rotate180: false } }, camera: { distance: 1.4, zoom: 1, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
     const $ = id => document.getElementById(id), sceneFront = $('sceneFront'), sceneBack = $('sceneBack');
@@ -477,13 +642,172 @@
     function sample(data, count = 248, baseRotate180 = false, userFlags = {}) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.innerHTML = data.markup; document.body.appendChild(svg); const shape = svg.querySelector(SHAPE_SELECTOR), n = Math.max(count * 8, 2000), total = shape.getTotalLength(), raw = []; for (let i = 0; i < n; i++) { const p = shapePoint(shape, total * i / n); raw.push([p.x, p.y]) } svg.remove(); let minX = Infinity, maxX = -Infinity; for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]) } const span = maxX - minX || 1, minY = Math.min(...raw.map(p => p[1])), maxY = Math.max(...raw.map(p => p[1])), scale = .65 / span, cy = (minY + maxY) / 2, normalized = raw.map(p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale]); let negateX = baseRotate180, negateY = baseRotate180; if (userFlags.flipH) negateX = !negateX; if (userFlags.flipV) negateY = !negateY; if (userFlags.rotate180) { negateX = !negateX; negateY = !negateY } if (negateX || negateY) normalized.forEach(p => { if (negateX) p[0] *= -1; if (negateY) p[1] *= -1 }); const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]), yAt = (x, upper) => { const hits = []; for (const [[x1, y1], [x2, y2]] of segments) { if (Math.abs(x2 - x1) < 1e-9) { if (Math.abs(x - x1) < 1e-5) hits.push(y1, y2) } else if (x >= Math.min(x1, x2) && x <= Math.max(x1, x2)) { const t = (x - x1) / (x2 - x1); hits.push(y1 + t * (y2 - y1)) } } return hits.length ? (upper ? Math.max(...hits) : Math.min(...hits)) : normalized.reduce((a, p) => Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a, normalized[0])[1] }; const half = Math.floor(count / 2), top = [], bottom = []; for (let i = 0; i < half; i++) { const t = i / (half - 1), rx = .325 - t * .65, lx = -.325 + t * .65; top.push([rx, yAt(rx, true)]); bottom.push([lx, yAt(lx, false)]) } return top.concat(bottom.slice(1), top.slice(0, 1)) }
     function build() { if (!state.front || !state.back || !rendererFront) return; const a = sample(state.front, 248, false, state.transform.front), b = sample(state.back, 248, true, state.transform.back), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('meshInfoFront').textContent = $('meshInfoBack').textContent = (pos.length / 3) + ' samples'; $('status').textContent = 'LIVE / ' + $('frontName').textContent + ' + ' + $('backName').textContent; rebuildGeometry(); }
     function rebuildGeometry() { meshGroup.clear(); axisGroup.clear(); topEdgeGroup.clear(); const material = new THREE.MeshStandardMaterial({ color: 0x3b958c, roughness: .48, metalness: .08, side: THREE.DoubleSide }); const renderHeight = Math.max(state.height, .015), positions = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) { const a = i * 3, b = (i + 1) * 3, topA = [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]], topB = [state.mesh[b], state.mesh[b + 1], state.mesh[b + 2]], bottomA = [topA[0], topA[1], topA[2] - renderHeight], bottomB = [topB[0], topB[1], topB[2] - renderHeight]; positions.push(...topA, ...topB, ...bottomB, ...topA, ...bottomB, ...bottomA) } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material)); const topPoints = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) topPoints.push(new THREE.Vector3(state.mesh[i * 3], state.mesh[i * 3 + 1], state.mesh[i * 3 + 2])); const topCurve = new THREE.CatmullRomCurve3(topPoints, true, 'centripetal'); topEdgeGroup.add(new THREE.Mesh(new THREE.TubeGeometry(topCurve, Math.max(64, topPoints.length * 2), .005, 8, true), new THREE.MeshBasicMaterial({ color: 0xb9fff0 }))); const length = Math.max(.65, state.height, .35) * 4, origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xffbe5a }); for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, length), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) } }
+    const SCAD_MODULES = `
+// Lowest level reached by the figure: lowest curve point, minus the ribbon
+// drop (height) and the sphere radius used to sweep the ribbon.
+floor_z = min([for (p = curve_points_mm) p[2]]) - height - thickness / 2;
+
+// First point where the ray from (cx, cy) at angle a (degrees, measured from
+// the +x axis, so +y is 90) crosses the curve, seen from above. The curve may
+// cross a ray several times; the first crossing found is used. The z of the
+// crossing is interpolated along the curve segment.
+function ray_hit(points, cx, cy, a) =
+    let (
+        dir = [cos(a), sin(a)],
+        hits = [
+            for (i = [0 : len(points) - 2])
+                let (
+                    v1 = [points[i][0] - cx, points[i][1] - cy],
+                    v2 = [points[i + 1][0] - cx, points[i + 1][1] - cy],
+                    c1 = dir[0] * v1[1] - dir[1] * v1[0],
+                    c2 = dir[0] * v2[1] - dir[1] * v2[0]
+                )
+                // Segment straddles the ray's line, on the ray's side of the center
+                if (c1 * c2 <= 0 && c1 != c2 && dir * (v1 + v2) > 0)
+                    let (t = c1 / (c1 - c2))
+                        points[i] + t * (points[i + 1] - points[i])
+        ]
+    )
+    hits[0];
+
+// Almond (vesica) outline: pointed at both ends of the y-axis, width w at
+// its middle, length l tip to tip; the intersection of two equal circles.
+module almond_2d(w, l) {
+    a = w / 2;
+    b = l / 2;
+    R = (a * a + b * b) / (2 * a);
+    c = R - a;
+    intersection() {
+        translate([ c, 0]) circle(r = R, $fn = 128);
+        translate([-c, 0]) circle(r = R, $fn = 128);
+    }
+}
+
+// Flare where a leg (topping out at curve point p) meets the ribbon. The
+// flare follows the curve itself: small leg-diameter cylinders ride along
+// the curve points within leg_flare of the leg, tops tucked into the
+// ribbon's underside, bottoms rising at 45 degrees with distance from the
+// leg. Consecutive cylinders are hulled pairwise, the same way the ribbon
+// is swept, so the flare bends with the curve instead of running off on a
+// straight tangent.
+module flare_for_leg(points, p) {
+    flare_bottom = p[2] - height - thickness / 2 - leg_flare;  // at the leg
+    for (i = [0 : len(points) - 2]) {
+        d1 = norm([points[i][0] - p[0], points[i][1] - p[1]]);
+        d2 = norm([points[i + 1][0] - p[0], points[i + 1][1] - p[1]]);
+        bz1 = flare_bottom + d1;
+        bz2 = flare_bottom + d2;
+        tz1 = points[i][2] - height;
+        tz2 = points[i + 1][2] - height;
+        // Keep going along the curve until the rising 45-degree underside
+        // meets the ribbon, so the flare always tapers out to nothing
+        // instead of ending in a vertical face where the ribbon climbs.
+        // The 4 * leg_flare cap guards against a ribbon that climbs at
+        // 45 degrees or more, which the taper could never catch.
+        if ((tz1 - bz1 > 0.01 || tz2 - bz2 > 0.01) && min(d1, d2) < 4 * leg_flare)
+            hull()
+                for (j = [i, i + 1]) {
+                    q = points[j];
+                    d = norm([q[0] - p[0], q[1] - p[1]]);
+                    bz = flare_bottom + d;          // 45-degree underside
+                    tz = q[2] - height;              // inside the ribbon
+                    translate([q[0], q[1], min(bz, tz - 0.01)])
+                        cylinder(h = max(tz - bz, 0.01), d = leg_diameter, $fn = 24);
+                }
+    }
+}
+
+// Three legs, placed where vertical half-planes from the xy-center of the
+// shape (one toward +y, the others 120 and 240 degrees around) meet the curve.
+// Legs run from the curve down to leg_length below the figure's lowest point.
+module legs_for_curve(points) {
+    xs = [for (p = points) p[0]];
+    ys = [for (p = points) p[1]];
+    cx = (min(xs) + max(xs)) / 2;
+    cy = (min(ys) + max(ys)) / 2;
+    leg_bottom = floor_z - leg_length;
+    for (a = [90, 210, 330]) {
+        p = ray_hit(points, cx, cy, a);
+
+        translate([p[0], p[1], leg_bottom])
+            cylinder(h = p[2] - leg_bottom, d = leg_diameter, $fn = 50);
+
+        if (leg_flare > 0) flare_for_leg(points, p);
+
+        // Feet, flush with the leg bottoms: an almond pointing +y on the
+        // 90-degree leg (the orientation marker), round feet on the others.
+        translate([p[0], p[1], leg_bottom]) {
+            if (a == 90)
+                linear_extrude(height = foot_height)
+                    almond_2d(foot_width_90, sqrt(3) * foot_width_90);
+            else
+                cylinder(h = foot_height, d = foot_diameter_others, $fn = 50);
+        }
+    }
+}
+
+module parametric_ribbon(points) {
+    steps = len(points) - 1;
+
+    for (i = [0 : steps - 1]) {
+        p1 = points[i];
+        p2 = points[i + 1];
+
+        hull() {
+            translate(p1) sphere(r = thickness / 2, $fn = 25);
+            translate([p1[0], p1[1], p1[2] - height]) sphere(r = thickness / 2, $fn = 25);
+
+            translate(p2) sphere(r = thickness / 2, $fn = 25);
+            translate([p2[0], p2[1], p2[2] - height]) sphere(r = thickness / 2, $fn = 25);
+        }
+    }
+}
+
+parametric_ribbon(curve_points_mm);
+if (add_legs) legs_for_curve(curve_points_mm);
+`;
+    function scadCurvePoints(mesh) { const rows = []; for (let i = 0; i < mesh.length; i += 3) rows.push(`    [${mesh[i].toFixed(6)}, ${mesh[i + 1].toFixed(6)}, ${mesh[i + 2].toFixed(6)}]`); return rows.join(',\n') }
+    function generateScad(params) { return `// Impossible cylinder: ${$('frontName').textContent} (front) + ${$('backName').textContent} (back)
+// Exported from the Impossible Cylinders web app.
+// Tweak the parameters below directly, or via Window > Customizer in OpenSCAD.
+// Press F5 to preview, F6 to render, then export as STL for printing.
+
+// ===== PARAMETERS =====
+
+width = ${params.width};                          // overall width scale (mm)
+height = ${params.height};                         // ribbon drop / thickness in z (mm)
+thickness = ${params.thickness};                       // wall thickness (mm)
+add_legs = ${params.addLegs};                    // add three legs at 120-degree spacing
+leg_diameter = ${params.legDiameter};                    // leg thickness (mm)
+leg_length = ${params.legLength};                      // extra leg length (mm) below the lowest point of the figure
+leg_flare = ${params.legFlare};                       // how far (mm) each leg flares into the ribbon
+foot_height = ${params.footHeight};                     // height of all three feet
+foot_width_90 = ${params.footWidth90};                   // widest width (mm) of the almond foot on the +y (90-degree) leg
+foot_diameter_others = ${params.footDiameterOthers};            // diameter (mm) of the round feet on the other two legs
+
+// ===== CURVE (dimensionless, baked from the web app preview) =====
+
+curve_points = [
+${scadCurvePoints(state.mesh)}
+];
+
+// Scale dimensionless points into mm: x,y,z scaled by width.
+curve_points_mm = [
+    for (p = curve_points) [ p[0] * width, p[1] * width, p[2] * width ]
+];
+${SCAD_MODULES}` }
+    function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name($('frontName').textContent)}-${name($('backName').textContent)}.scad` }
+    function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegDiameter', 'scadLegLength', 'scadLegFlare', 'scadFootHeight', 'scadFootWidth90', 'scadFootDiameterOthers']) $(id).disabled = !on }
+    function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } const width = 100; $('scadWidth').value = width; $('scadHeight').value = state.height > 0 ? +(state.height * width).toFixed(2) : 20; $('scadThickness').value = 3; $('scadAddLegs').checked = true; $('scadLegDiameter').value = 3; $('scadLegLength').value = 8; $('scadLegFlare').value = 2; $('scadFootHeight').value = 2; $('scadFootWidth90').value = 7; $('scadFootDiameterOthers').value = 7; toggleLegFields(); $('exportModal').hidden = false }
+    function closeExportModal() { $('exportModal').hidden = true }
+    function downloadScad() { const params = { width: +$('scadWidth').value, height: +$('scadHeight').value, thickness: +$('scadThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legLength: +$('scadLegLength').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth90: +$('scadFootWidth90').value, footDiameterOthers: +$('scadFootDiameterOthers').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
     function camPos(azimuth) { const e = state.camera.elevation, d = state.camera.distance; return new THREE.Vector3(d * Math.cos(e) * Math.sin(azimuth), d * Math.cos(e) * Math.cos(azimuth), d * Math.sin(e)) }
     function updateCamera() { if (!state.axisOrigin || !rendererFront) return; const target = new THREE.Vector3(...state.axisOrigin); cameraFront.position.copy(target).add(camPos(state.camera.azimuth)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix(); cameraBack.position.copy(target).add(camPos(state.camera.azimuth + Math.PI)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix(); rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack) }
     function resizeOne(cam, canvasEl, renderer) { const r = canvasEl.getBoundingClientRect(), aspect = (r.width / r.height) || 1; cam.left = -aspect * 1.05; cam.right = aspect * 1.05; cam.top = 1.05; cam.bottom = -1.05; cam.updateProjectionMatrix(); renderer.setSize(r.width, r.height, false) }
     function resize() { if (!rendererFront) return; resizeOne(cameraFront, sceneFront, rendererFront); resizeOne(cameraBack, sceneBack, rendererBack); updateCamera() }
     function render() { updateCamera(); requestAnimationFrame(render) }
     function wireOrbit(canvasEl) { canvasEl.onpointerdown = e => { canvasEl.setPointerCapture(e.pointerId); canvasEl.classList.add('dragging'); state.drag = { x: e.clientX } }; canvasEl.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; canvasEl.onpointerup = canvasEl.onpointercancel = () => { state.drag = null; canvasEl.classList.remove('dragging') }; canvasEl.onwheel = e => { e.preventDefault(); state.camera.zoom = Math.max(.3, Math.min(8, state.camera.zoom * Math.exp(-e.deltaY * .001))) } }
-    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV'], ['Rotate180', 'rotate180']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV'], ['Rotate180', 'rotate180']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
