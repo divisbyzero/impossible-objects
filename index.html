@@ -1,39 +1,416 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Impossible Cylinders</title>
-<style>
-:root{color-scheme:dark;--ink:#edf4f2;--muted:#9bb0ae;--line:#294348;--panel:#102024;--accent:#62dfc5;--gold:#ffbe5a}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#071114;color:var(--ink);font-family:Georgia,"Times New Roman",serif}body{overflow:auto}.app{min-height:100vh;display:grid;grid-template-rows:auto 1fr;background:radial-gradient(circle at 78% 12%,#18373a 0,#071114 42%,#050b0d 100%)}header{padding:18px clamp(16px,4vw,44px) 14px;border-bottom:1px solid var(--line);display:flex;align-items:end;justify-content:space-between;gap:20px}h1{margin:0;font-size:clamp(24px,3vw,38px);font-weight:400;letter-spacing:.02em}.subtitle{margin:5px 0 0;color:var(--muted);font:13px/1.4 ui-sans-serif,system-ui,sans-serif}.status{color:var(--accent);font:12px ui-monospace,monospace;white-space:nowrap}.workspace{min-height:0;display:grid;grid-template-columns:minmax(240px,35%) 8px minmax(0,1fr);padding:18px;gap:0}.left{min-width:0;display:grid;grid-template-rows:1fr 1fr;gap:14px}.divider{cursor:col-resize;position:relative;margin:0 12px;border-left:1px solid var(--line)}.divider:after{content:"⋮";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);background:#071114;padding:6px 0;font:22px serif}.panel{min-height:210px;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;background:linear-gradient(145deg,rgba(25,47,51,.9),rgba(10,22,25,.95));border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 55px rgba(0,0,0,.18)}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border-bottom:1px solid var(--line);font:12px ui-sans-serif,system-ui,sans-serif}.panel-head strong{font-weight:600;letter-spacing:.08em;text-transform:uppercase}.panel-head span{color:var(--muted)}.preview{min-height:0;position:relative;display:grid;place-items:center;padding:12px;background:repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,255,255,.025) 24px),repeating-linear-gradient(90deg,transparent 0 23px,rgba(255,255,255,.025) 24px)}.preview:before{content:"";position:absolute;inset:12px;border:1px solid rgba(98,223,197,.12);pointer-events:none}.preview svg{width:100%;height:100%;max-height:260px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.28))}.preview path{fill:rgba(98,223,197,.11);stroke:var(--accent);stroke-width:5;vector-effect:non-scaling-stroke;stroke-linejoin:round}.back .preview path{fill:rgba(243,166,93,.1);stroke:#f3a65d}.controls{display:flex;align-items:center;gap:8px;padding:9px;border-top:1px solid var(--line);font:12px ui-sans-serif,system-ui,sans-serif}select,input[type=file]{min-width:0;color:var(--ink);background:#0b181b;border:1px solid #35545a;border-radius:4px;padding:7px 8px;font:12px ui-sans-serif,system-ui,sans-serif}select{flex:1}input[type=file]{max-width:130px;padding:5px;color:var(--muted)}.stage{min-width:0;min-height:430px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:#081417;box-shadow:0 25px 80px rgba(0,0,0,.25)}#scene{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#scene.dragging{cursor:grabbing}.hud{position:absolute;inset:14px 16px auto;display:flex;justify-content:space-between;pointer-events:none;font:11px ui-monospace,monospace;color:#b1c5c6}.hud b{color:var(--accent);font-weight:400}.legend{position:absolute;bottom:14px;left:16px;color:#92aaac;font:11px ui-sans-serif,system-ui,sans-serif;pointer-events:none}.height-control{position:absolute;right:16px;bottom:12px;display:flex;align-items:center;gap:9px;padding:8px 10px;background:rgba(7,17,20,.88);border:1px solid #35545a;border-radius:5px;font:11px ui-sans-serif,system-ui,sans-serif}.height-control label{color:#b1c5c6;white-space:nowrap}.height-control input{width:clamp(90px,12vw,150px);accent-color:var(--accent)}.height-control output{width:38px;color:var(--accent);font:11px ui-monospace,monospace;text-align:right}.fallback{position:absolute;inset:0;display:grid;place-items:center;padding:30px;text-align:center;color:var(--muted);font:14px ui-sans-serif,system-ui,sans-serif}
-@media(max-width:760px){header{align-items:start;flex-direction:column;gap:8px}.workspace{display:flex;flex-direction:column;padding:10px;gap:10px}.left{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:none;gap:10px}.panel{min-height:260px}.divider{height:8px;margin:0;border-left:0;border-top:1px solid var(--line);cursor:row-resize}.divider:after{content:"⋯"}.stage{min-height:58vh}.controls{align-items:stretch;flex-direction:column}input[type=file]{max-width:none}}@media(max-width:470px){.left{grid-template-columns:1fr}.panel{min-height:220px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Impossible Cylinders</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #edf4f2;
+      --muted: #9bb0ae;
+      --line: #294348;
+      --panel: #102024;
+      --accent: #62dfc5;
+      --gold: #ffbe5a
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #071114;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif
+    }
+
+    body {
+      overflow: auto
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background: radial-gradient(circle at 78% 12%, #18373a 0, #071114 42%, #050b0d 100%)
+    }
+
+    header {
+      padding: 18px clamp(16px, 4vw, 44px) 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      font-weight: 400;
+      letter-spacing: .02em
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font: 13px/1.4 ui-sans-serif, system-ui, sans-serif
+    }
+
+    .status {
+      color: var(--accent);
+      font: 12px ui-monospace, monospace;
+      white-space: nowrap
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(240px, 35%) 8px minmax(0, 1fr);
+      padding: 18px;
+      gap: 0
+    }
+
+    .left {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 14px
+    }
+
+    .divider {
+      cursor: col-resize;
+      position: relative;
+      margin: 0 12px;
+      border-left: 1px solid var(--line)
+    }
+
+    .divider:after {
+      content: "⋮";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      background: #071114;
+      padding: 6px 0;
+      font: 22px serif
+    }
+
+    .panel {
+      min-height: 210px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(25, 47, 51, .9), rgba(10, 22, 25, .95));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .18)
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--line);
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .panel-head strong {
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
+
+    .panel-head span {
+      color: var(--muted)
+    }
+
+    .preview {
+      min-height: 0;
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      background: repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px), repeating-linear-gradient(90deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px)
+    }
+
+    .preview:before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(98, 223, 197, .12);
+      pointer-events: none
+    }
+
+    .preview svg {
+      width: 100%;
+      height: 100%;
+      max-height: 260px;
+      filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .28))
+    }
+
+    .preview path {
+      fill: rgba(98, 223, 197, .11);
+      stroke: var(--accent);
+      stroke-width: 5;
+      vector-effect: non-scaling-stroke;
+      stroke-linejoin: round
+    }
+
+    .back .preview path {
+      fill: rgba(243, 166, 93, .1);
+      stroke: #f3a65d
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px;
+      border-top: 1px solid var(--line);
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    select,
+    input[type=file] {
+      min-width: 0;
+      color: var(--ink);
+      background: #0b181b;
+      border: 1px solid #35545a;
+      border-radius: 4px;
+      padding: 7px 8px;
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    select {
+      flex: 1
+    }
+
+    input[type=file] {
+      max-width: 130px;
+      padding: 5px;
+      color: var(--muted)
+    }
+
+    .stage {
+      min-width: 0;
+      min-height: 430px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #081417;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, .25)
+    }
+
+    #scene {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      cursor: grab
+    }
+
+    #scene.dragging {
+      cursor: grabbing
+    }
+
+    .hud {
+      position: absolute;
+      inset: 14px 16px auto;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      font: 11px ui-monospace, monospace;
+      color: #b1c5c6
+    }
+
+    .hud b {
+      color: var(--accent);
+      font-weight: 400
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      color: #92aaac;
+      font: 11px ui-sans-serif, system-ui, sans-serif;
+      pointer-events: none
+    }
+
+    .height-control {
+      position: absolute;
+      right: 16px;
+      bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      background: rgba(7, 17, 20, .88);
+      border: 1px solid #35545a;
+      border-radius: 5px;
+      font: 11px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .height-control label {
+      color: #b1c5c6;
+      white-space: nowrap
+    }
+
+    .height-control input {
+      width: clamp(90px, 12vw, 150px);
+      accent-color: var(--accent)
+    }
+
+    .height-control output {
+      width: 38px;
+      color: var(--accent);
+      font: 11px ui-monospace, monospace;
+      text-align: right
+    }
+
+    .fallback {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+      font: 14px ui-sans-serif, system-ui, sans-serif
+    }
+
+    @media(max-width:760px) {
+      header {
+        align-items: start;
+        flex-direction: column;
+        gap: 8px
+      }
+
+      .workspace {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px
+      }
+
+      .left {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+        gap: 10px
+      }
+
+      .panel {
+        min-height: 260px
+      }
+
+      .divider {
+        height: 8px;
+        margin: 0;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        cursor: row-resize
+      }
+
+      .divider:after {
+        content: "⋯"
+      }
+
+      .stage {
+        min-height: 58vh
+      }
+
+      .controls {
+        align-items: stretch;
+        flex-direction: column
+      }
+
+      input[type=file] {
+        max-width: none
+      }
+    }
+
+    @media(max-width:470px) {
+      .left {
+        grid-template-columns: 1fr
+      }
+
+      .panel {
+        min-height: 220px
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="app"><header><div><h1>Impossible Cylinders</h1><p class="subtitle">Two silhouettes, one spatial ribbon.</p></div><div class="status" id="status">READY / WEBGL</div></header><main class="workspace" id="workspace"><section class="left" id="leftPane"><article class="panel front"><div class="panel-head"><strong>Front view</strong><span id="frontName">arrow3.svg</span></div><div class="preview" id="frontPreview"></div><div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input id="frontFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG"></div></article><article class="panel back"><div class="panel-head"><strong>Back view</strong><span id="backName">car.svg</span></div><div class="preview" id="backPreview"></div><div class="controls"><select id="backSelect" aria-label="Back SVG"></select><input id="backFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload back SVG"></div></article></section><div class="divider" id="divider" aria-label="Resize panels"></div><section class="stage"><canvas id="scene" aria-label="Interactive 3D impossible cylinder preview"></canvas><div class="hud"><span><b id="meshInfo">248 samples</b> / depth-tested mesh</span><span>45° ORBIT CAMERA</span></div><div class="legend">Drag horizontally to orbit · wheel or pinch to zoom</div><div class="height-control"><label for="heightSlider">Height</label><input id="heightSlider" type="range" min="0" max="1.5" step="0.01" value="0" aria-label="Object height"><output id="heightValue" for="heightSlider">0.00</output></div></section></main></div>
-<script type="module">
-import * as THREE from './three.module.js';
-const SVG_FILES=['arrow.svg','arrow2.svg','arrow3.svg','arrowReverse.svg','car.svg','chick.svg','chicken.svg','fire.svg','rabbit.svg','sneaker.svg','star.svg','turtle.svg','WaterDrop.svg'];
-const DEMOS={'arrow3.svg':{viewBox:'0 0 612 792',d:'M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z'},'car.svg':{viewBox:'0 0 612 792',d:'M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z'}};
-const state={front:null,back:null,mesh:null,axisOrigin:null,height:0,camera:{distance:1.4,azimuth:Math.PI,elevation:Math.PI/4},drag:null};
-const $=id=>document.getElementById(id), scene=$('scene');
-let renderer,camera,world,meshGroup,axisGroup,resizeObserver;
-function options(){for(const id of ['frontSelect','backSelect'])$(id).innerHTML=SVG_FILES.map(n=>`<option>${n}</option>`).join('');$('frontSelect').value='arrow3.svg';$('backSelect').value='car.svg';}
-function previewBox(data){const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),path=document.createElementNS(ns,'path');svg.setAttribute('viewBox',data.viewBox);svg.style.position='absolute';svg.style.visibility='hidden';path.setAttribute('d',data.d);svg.appendChild(path);document.body.appendChild(svg);try{const b=path.getBBox(),p=Math.max(b.width,b.height)*.08;return `${b.x-p} ${b.y-p} ${b.width+2*p} ${b.height+2*p}`}finally{svg.remove()}}
-function preview(data){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet"><path d="${data.d}"/></svg>`}
-function show(which,data,name){state[which]=data;$(`${which}Preview`).innerHTML=preview(data);$(`${which}Name`).textContent=name;build()}
-function parse(text){const doc=new DOMParser().parseFromString(text,'image/svg+xml'),path=doc.querySelector('path');if(!path)throw Error('SVG needs a path');return{viewBox:doc.documentElement.getAttribute('viewBox')||'0 0 100 100',d:path.getAttribute('d')}}
-function choose(which,name){if(DEMOS[name])return show(which,DEMOS[name],name);fetch(`curve_defs/svg/${encodeURIComponent(name)}`).then(r=>{if(!r.ok)throw Error();return r.text()}).then(t=>show(which,parse(t),name)).catch(()=>{$('status').textContent='UPLOAD SVG TO USE THIS FILE'})}
-function upload(which,file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{show(which,parse(reader.result),file.name)}catch(e){$('status').textContent=e.message.toUpperCase()}};reader.readAsText(file)}
-function sample(data,count=248,rotate180=false){const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),path=document.createElementNS(ns,'path');svg.setAttribute('viewBox',data.viewBox);path.setAttribute('d',data.d);svg.appendChild(path);document.body.appendChild(svg);const n=Math.max(count*8,2000),total=path.getTotalLength(),raw=[];for(let i=0;i<n;i++){const p=path.getPointAtLength(total*i/n);raw.push([p.x,p.y])}svg.remove();let minX=Infinity,maxX=-Infinity;for(const p of raw){minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0])}const span=maxX-minX||1,minY=Math.min(...raw.map(p=>p[1])),maxY=Math.max(...raw.map(p=>p[1])),scale=.65/span,cy=(minY+maxY)/2,normalized=raw.map(p=>[(p[0]-(minX+maxX)/2)*scale,-(p[1]-cy)*scale]);if(rotate180)normalized.forEach(p=>{p[0]*=-1;p[1]*=-1});const segments=normalized.map((p,i)=>[p,normalized[(i+1)%normalized.length]]),yAt=(x,upper)=>{const hits=[];for(const[[x1,y1],[x2,y2]]of segments){if(Math.abs(x2-x1)<1e-9){if(Math.abs(x-x1)<1e-5)hits.push(y1,y2)}else if(x>=Math.min(x1,x2)&&x<=Math.max(x1,x2)){const t=(x-x1)/(x2-x1);hits.push(y1+t*(y2-y1))}}return hits.length?(upper?Math.max(...hits):Math.min(...hits)):normalized.reduce((a,p)=>Math.abs(p[0]-x)<Math.abs(a[0]-x)?p:a,normalized[0])[1]};const half=Math.floor(count/2),top=[],bottom=[];for(let i=0;i<half;i++){const t=i/(half-1),rx=.325-t*.65,lx=-.325+t*.65;top.push([rx,yAt(rx,true)]);bottom.push([lx,yAt(lx,false)])}return top.concat(bottom.slice(1),top.slice(0,1))}
-function build(){if(!state.front||!state.back||!renderer)return;const a=sample(state.front),b=sample(state.back,248,true),pos=[];for(let i=0;i<a.length;i++){const x=a[i][0],y1=a[i][1],y2=b[i][1];pos.push(x,(y1+y2)/2,(y1-y2)/2)}state.mesh=pos;const values=[[],[],[]];for(let i=0;i<pos.length;i+=3)for(let j=0;j<3;j++)values[j].push(pos[i+j]);state.axisOrigin=values.map(v=>(Math.min(...v)+Math.max(...v))/2);$('meshInfo').textContent=(pos.length/3)+' samples';$('status').textContent='LIVE / '+$('frontName').textContent+' + '+$('backName').textContent;rebuildGeometry();}
-function rebuildGeometry(){meshGroup.clear();axisGroup.clear();const material=new THREE.MeshStandardMaterial({color:0x277f78,roughness:.48,metalness:.08,side:THREE.DoubleSide});const positions=[];for(let i=0;i<state.mesh.length/3-1;i++){const a=i*3,b=(i+1)*3,topA=[state.mesh[a],state.mesh[a+1],state.mesh[a+2]],topB=[state.mesh[b],state.mesh[b+1],state.mesh[b+2]],bottomA=[topA[0],topA[1],topA[2]-state.height],bottomB=[topB[0],topB[1],topB[2]-state.height];positions.push(...topA,...topB,...bottomB,...topA,...bottomB,...bottomA)}const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();meshGroup.add(new THREE.Mesh(geometry,material));const length=Math.max(.65,state.height,.35)*4,origin=new THREE.Vector3(...state.axisOrigin),axisMaterial=new THREE.LineBasicMaterial({color:0xffbe5a});for(const direction of [new THREE.Vector3(1,0,0),new THREE.Vector3(0,1,0),new THREE.Vector3(0,0,1)]){const end=origin.clone().addScaledVector(direction,length),line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin,end]),axisMaterial);axisGroup.add(line)}centerCameraTarget();}
-function centerCameraTarget(){if(!state.axisOrigin)return;const target=new THREE.Vector3(...state.axisOrigin);camera.lookAt(target)}
-function updateCamera(){const target=new THREE.Vector3(...state.axisOrigin),e=state.camera.elevation,a=state.camera.azimuth,d=state.camera.distance;camera.position.set(target.x+d*Math.cos(e)*Math.sin(a),target.y+d*Math.cos(e)*Math.cos(a),target.z+d*Math.sin(e));camera.lookAt(target);renderer.render(world,camera)}
-function resize(){const r=scene.getBoundingClientRect(),aspect=r.width/r.height;camera.left=-aspect*1.05;camera.right=aspect*1.05;camera.top=1.05;camera.bottom=-1.05;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false);renderer.render(world,camera)}
-function render(){updateCamera();requestAnimationFrame(render)}
-function init(){options();renderer=new THREE.WebGLRenderer({canvas:scene,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x081417,1);renderer.shadowMap.enabled=true;world=new THREE.Scene();world.fog=new THREE.Fog(0x081417,8,18);meshGroup=new THREE.Group();axisGroup=new THREE.Group();world.add(meshGroup,axisGroup);world.add(new THREE.HemisphereLight(0xb8ffff,0x102126,2.2));const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(2,3,4);world.add(light);camera=new THREE.OrthographicCamera(-1,1,1,-1,.01,100);resizeObserver=new ResizeObserver(resize);resizeObserver.observe(scene);$('frontSelect').onchange=e=>choose('front',e.target.value);$('backSelect').onchange=e=>choose('back',e.target.value);$('frontFile').onchange=e=>upload('front',e.target.files[0]);$('backFile').onchange=e=>upload('back',e.target.files[0]);$('heightSlider').oninput=e=>{state.height=Number(e.target.value);$('heightValue').value=state.height.toFixed(2);$('heightValue').textContent=state.height.toFixed(2);rebuildGeometry()};scene.onpointerdown=e=>{scene.setPointerCapture(e.pointerId);scene.classList.add('dragging');state.drag={x:e.clientX}};scene.onpointermove=e=>{if(!state.drag)return;state.camera.azimuth+=(e.clientX-state.drag.x)*.012;state.drag.x=e.clientX};scene.onpointerup=scene.onpointercancel=()=>{state.drag=null;scene.classList.remove('dragging')};scene.onwheel=e=>{e.preventDefault();state.camera.distance=Math.max(.45,Math.min(30,state.camera.distance*Math.exp(e.deltaY*.001)))};show('front',DEMOS['arrow3.svg'],'arrow3.svg');show('back',DEMOS['car.svg'],'car.svg');render()}
-try{init()}catch(error){$('status').textContent='WEBGL UNAVAILABLE';$('scene').replaceWith(Object.assign(document.createElement('div'),{className:'fallback',textContent:'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.'}))}
-</script>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Impossible Cylinders</h1>
+        <p class="subtitle">Two silhouettes, one spatial ribbon.</p>
+      </div>
+      <div class="status" id="status">READY / WEBGL</div>
+    </header>
+    <main class="workspace" id="workspace">
+      <section class="left" id="leftPane">
+        <article class="panel front">
+          <div class="panel-head"><strong>Front view</strong><span id="frontName">arrow3.svg</span></div>
+          <div class="preview" id="frontPreview"></div>
+          <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input id="frontFile"
+              type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG"></div>
+        </article>
+        <article class="panel back">
+          <div class="panel-head"><strong>Back view</strong><span id="backName">car.svg</span></div>
+          <div class="preview" id="backPreview"></div>
+          <div class="controls"><select id="backSelect" aria-label="Back SVG"></select><input id="backFile" type="file"
+              accept="image/svg+xml,.svg" aria-label="Upload back SVG"></div>
+        </article>
+      </section>
+      <div class="divider" id="divider" aria-label="Resize panels"></div>
+      <section class="stage"><canvas id="scene" aria-label="Interactive 3D impossible cylinder preview"></canvas>
+        <div class="hud"><span><b id="meshInfo">248 samples</b> / depth-tested mesh</span><span>45° ORBIT CAMERA</span>
+        </div>
+        <div class="legend">Drag horizontally to orbit · wheel or pinch to zoom</div>
+        <div class="height-control"><label for="heightSlider">Height</label><input id="heightSlider" type="range"
+            min="0" max="1.5" step="0.01" value="0" aria-label="Object height"><output id="heightValue"
+            for="heightSlider">0.00</output></div>
+      </section>
+    </main>
+  </div>
+  <script type="module">
+    import * as THREE from './three.module.js';
+    const SVG_FILES = ['arrow.svg', 'arrow2.svg', 'arrow3.svg', 'arrowReverse.svg', 'car.svg', 'chick.svg', 'chicken.svg', 'fire.svg', 'rabbit.svg', 'sneaker.svg', 'star.svg', 'turtle.svg', 'WaterDrop.svg'];
+    const DEMOS = { 'arrow3.svg': { viewBox: '0 0 612 792', d: 'M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z' }, 'car.svg': { viewBox: '0 0 612 792', d: 'M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z' } };
+    const state = { front: null, back: null, mesh: null, axisOrigin: null, height: 0, camera: { distance: 1.4, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const $ = id => document.getElementById(id), scene = $('scene');
+    let renderer, camera, world, meshGroup, axisGroup, resizeObserver;
+    function options() { for (const id of ['frontSelect', 'backSelect']) $(id).innerHTML = SVG_FILES.map(n => `<option>${n}</option>`).join(''); $('frontSelect').value = 'arrow3.svg'; $('backSelect').value = 'car.svg'; }
+    function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; path.setAttribute('d', data.d); svg.appendChild(path); document.body.appendChild(svg); try { const b = path.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
+    function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet"><path d="${data.d}"/></svg>` }
+    function show(which, data, name) { state[which] = data; $(`${which}Preview`).innerHTML = preview(data); $(`${which}Name`).textContent = name; build() }
+    function parse(text) { const doc = new DOMParser().parseFromString(text, 'image/svg+xml'), path = doc.querySelector('path'); if (!path) throw Error('SVG needs a path'); return { viewBox: doc.documentElement.getAttribute('viewBox') || '0 0 100 100', d: path.getAttribute('d') } }
+    function choose(which, name) { if (DEMOS[name]) return show(which, DEMOS[name], name); fetch(`curve_defs/svg/${encodeURIComponent(name)}`).then(r => { if (!r.ok) throw Error(); return r.text() }).then(t => show(which, parse(t), name)).catch(() => { $('status').textContent = 'UPLOAD SVG TO USE THIS FILE' }) }
+    function upload(which, file) { if (!file) return; const reader = new FileReader(); reader.onload = () => { try { show(which, parse(reader.result), file.name) } catch (e) { $('status').textContent = e.message.toUpperCase() } }; reader.readAsText(file) }
+    function sample(data, count = 248, rotate180 = false) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path'); svg.setAttribute('viewBox', data.viewBox); path.setAttribute('d', data.d); svg.appendChild(path); document.body.appendChild(svg); const n = Math.max(count * 8, 2000), total = path.getTotalLength(), raw = []; for (let i = 0; i < n; i++) { const p = path.getPointAtLength(total * i / n); raw.push([p.x, p.y]) } svg.remove(); let minX = Infinity, maxX = -Infinity; for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]) } const span = maxX - minX || 1, minY = Math.min(...raw.map(p => p[1])), maxY = Math.max(...raw.map(p => p[1])), scale = .65 / span, cy = (minY + maxY) / 2, normalized = raw.map(p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale]); if (rotate180) normalized.forEach(p => { p[0] *= -1; p[1] *= -1 }); const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]), yAt = (x, upper) => { const hits = []; for (const [[x1, y1], [x2, y2]] of segments) { if (Math.abs(x2 - x1) < 1e-9) { if (Math.abs(x - x1) < 1e-5) hits.push(y1, y2) } else if (x >= Math.min(x1, x2) && x <= Math.max(x1, x2)) { const t = (x - x1) / (x2 - x1); hits.push(y1 + t * (y2 - y1)) } } return hits.length ? (upper ? Math.max(...hits) : Math.min(...hits)) : normalized.reduce((a, p) => Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a, normalized[0])[1] }; const half = Math.floor(count / 2), top = [], bottom = []; for (let i = 0; i < half; i++) { const t = i / (half - 1), rx = .325 - t * .65, lx = -.325 + t * .65; top.push([rx, yAt(rx, true)]); bottom.push([lx, yAt(lx, false)]) } return top.concat(bottom.slice(1), top.slice(0, 1)) }
+    function build() { if (!state.front || !state.back || !renderer) return; const a = sample(state.front), b = sample(state.back, 248, true), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('meshInfo').textContent = (pos.length / 3) + ' samples'; $('status').textContent = 'LIVE / ' + $('frontName').textContent + ' + ' + $('backName').textContent; rebuildGeometry(); }
+    function rebuildGeometry() { meshGroup.clear(); axisGroup.clear(); const material = new THREE.MeshStandardMaterial({ color: 0x277f78, roughness: .48, metalness: .08, side: THREE.DoubleSide }); const positions = []; for (let i = 0; i < state.mesh.length / 3 - 1; i++) { const a = i * 3, b = (i + 1) * 3, topA = [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]], topB = [state.mesh[b], state.mesh[b + 1], state.mesh[b + 2]], bottomA = [topA[0], topA[1], topA[2] - state.height], bottomB = [topB[0], topB[1], topB[2] - state.height]; positions.push(...topA, ...topB, ...bottomB, ...topA, ...bottomB, ...bottomA) } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material)); const length = Math.max(.65, state.height, .35) * 4, origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xffbe5a }); for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, length), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) } centerCameraTarget(); }
+    function centerCameraTarget() { if (!state.axisOrigin) return; const target = new THREE.Vector3(...state.axisOrigin); camera.lookAt(target) }
+    function updateCamera() { const target = new THREE.Vector3(...state.axisOrigin), e = state.camera.elevation, a = state.camera.azimuth, d = state.camera.distance; camera.position.set(target.x + d * Math.cos(e) * Math.sin(a), target.y + d * Math.cos(e) * Math.cos(a), target.z + d * Math.sin(e)); camera.lookAt(target); renderer.render(world, camera) }
+    function resize() { const r = scene.getBoundingClientRect(), aspect = r.width / r.height; camera.left = -aspect * 1.05; camera.right = aspect * 1.05; camera.top = 1.05; camera.bottom = -1.05; camera.updateProjectionMatrix(); renderer.setSize(r.width, r.height, false); renderer.render(world, camera) }
+    function render() { updateCamera(); requestAnimationFrame(render) }
+    function init() { options(); renderer = new THREE.WebGLRenderer({ canvas: scene, antialias: true, alpha: false }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setClearColor(0x081417, 1); renderer.shadowMap.enabled = true; world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); world.add(meshGroup, axisGroup); world.add(new THREE.HemisphereLight(0xb8ffff, 0x102126, 2.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(scene); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('heightSlider').oninput = e => { state.height = Number(e.target.value); $('heightValue').value = state.height.toFixed(2); $('heightValue').textContent = state.height.toFixed(2); rebuildGeometry() }; scene.onpointerdown = e => { scene.setPointerCapture(e.pointerId); scene.classList.add('dragging'); state.drag = { x: e.clientX } }; scene.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; scene.onpointerup = scene.onpointercancel = () => { state.drag = null; scene.classList.remove('dragging') }; scene.onwheel = e => { e.preventDefault(); state.camera.distance = Math.max(.45, Math.min(30, state.camera.distance * Math.exp(e.deltaY * .001))) }; show('front', DEMOS['arrow3.svg'], 'arrow3.svg'); show('back', DEMOS['car.svg'], 'car.svg'); render() }
+    try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; $('scene').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
+  </script>
 </body>
+
 </html>
