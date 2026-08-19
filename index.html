@@ -33,524 +33,524 @@
     }
 
     body {
-        overflow: auto
-      }
+      overflow: auto
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    .app {
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(200px, 24%) 8px minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "header header stages"
+        "left   divider stages";
+      background: radial-gradient(circle at 78% 12%, #18373a 0, #071114 42%, #050b0d 100%)
+    }
+
+    header {
+      grid-area: header;
+      padding: 12px clamp(14px, 3vw, 32px) 10px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      gap: 6px
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(17px, 2.1vw, 26px);
+      font-weight: 400;
+      letter-spacing: .02em
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font: 13px/1.4 ui-sans-serif, system-ui, sans-serif
+    }
+
+    .status {
+      color: var(--accent);
+      font: 12px ui-monospace, monospace;
+      white-space: nowrap
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
+
+    .btn {
+      color: var(--ink);
+      background: #0b181b;
+      border: 1px solid #35545a;
+      border-radius: 4px;
+      padding: 7px 12px;
+      font: 12px ui-sans-serif, system-ui, sans-serif;
+      cursor: pointer
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #06211d;
+      font-weight: 600
+    }
+
+    .btn.primary:hover {
+      color: #06211d;
+      opacity: .9
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      background: rgba(4, 10, 12, .72);
+      padding: 20px
+    }
+
+    .modal-overlay[hidden] {
+      display: none
+    }
+
+    .modal {
+      width: min(480px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: linear-gradient(145deg, rgba(25, 47, 51, .97), rgba(10, 22, 25, .99));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, .4)
+    }
+
+    .modal-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .modal-head h2 {
+      margin: 0 0 4px;
+      font: 400 16px Georgia, serif
+    }
+
+    .modal-head p {
+      margin: 0;
+      color: var(--muted);
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .modal-body {
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 14px
+    }
+
+    .modal-body .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font: 11px ui-sans-serif, system-ui, sans-serif;
+      color: var(--muted)
+    }
+
+    .modal-body .field.span2 {
+      grid-column: 1 / -1
+    }
+
+    .modal-body .field.row {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px
+    }
+
+    .modal-body input[type=number],
+    .modal-body input[type=text] {
+      color: var(--ink);
+      background: #0b181b;
+      border: 1px solid #35545a;
+      border-radius: 4px;
+      padding: 7px 8px;
+      font: 12px ui-sans-serif, system-ui, sans-serif;
+      width: 100%
+    }
+
+    .modal-body input:disabled {
+      opacity: .4
+    }
+
+    .modal-body label.chk {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .modal-body label.chk input {
+      accent-color: var(--accent)
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line)
+    }
+
+    .workspace {
+      display: contents
+    }
+
+    .left {
+      grid-area: left;
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 14px;
+      padding: 14px 0 18px 18px
+    }
+
+    .divider {
+      grid-area: divider;
+      cursor: col-resize;
+      position: relative;
+      margin: 14px 12px 18px;
+      border-left: 1px solid var(--line)
+    }
+
+    .divider:after {
+      content: "⋮";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      background: #071114;
+      padding: 6px 0;
+      font: 22px serif
+    }
+
+    .panel {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(25, 47, 51, .9), rgba(10, 22, 25, .95));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .18)
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--line);
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .panel-head strong {
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
+
+    .panel-head span {
+      color: var(--muted)
+    }
+
+    .preview {
+      min-height: 0;
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      background: repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px), repeating-linear-gradient(90deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px)
+    }
+
+    .preview:before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(103, 196, 239, .14);
+      pointer-events: none
+    }
+
+    .preview svg {
+      width: 100%;
+      height: 100%;
+      max-height: 260px;
+      filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .28))
+    }
+
+    .preview path,
+    .preview circle,
+    .preview rect,
+    .preview ellipse,
+    .preview line,
+    .preview polygon,
+    .preview polyline {
+      fill: var(--figure-fill);
+      stroke: var(--figure-edge);
+      stroke-width: 5;
+      vector-effect: non-scaling-stroke;
+      stroke-linejoin: round
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 9px;
+      border-top: 1px solid var(--line);
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .controls label.chk {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      font: 11px ui-sans-serif, system-ui, sans-serif;
+      white-space: nowrap
+    }
+
+    .controls label.chk input {
+      accent-color: var(--accent)
+    }
+
+    .transform-controls {
+      display: flex;
+      flex-basis: 100%;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .controls .file-control {
+      flex: 0 0 100%;
+      max-width: none
+    }
+
+    select,
+    input[type=file] {
+      min-width: 0;
+      color: var(--ink);
+      background: #0b181b;
+      border: 1px solid #35545a;
+      border-radius: 4px;
+      padding: 7px 8px;
+      font: 12px ui-sans-serif, system-ui, sans-serif
+    }
+
+    select {
+      flex: 1
+    }
+
+    input[type=file] {
+      max-width: 130px;
+      padding: 5px;
+      color: var(--muted)
+    }
+
+    .stages {
+      grid-area: stages;
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px
+    }
+
+    .stage {
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #081417;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, .25)
+    }
+
+    .scene-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      cursor: grab
+    }
+
+    .scene-canvas.dragging {
+      cursor: grabbing
+    }
+
+    .hud {
+      position: absolute;
+      inset: 14px 16px auto;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      font: 11px ui-monospace, monospace;
+      color: #b1c5c6
+    }
+
+    .hud b {
+      color: var(--accent);
+      font-weight: 400
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      color: #92aaac;
+      font: 11px ui-sans-serif, system-ui, sans-serif;
+      pointer-events: none
+    }
+
+    .scene-controls {
+      position: absolute;
+      right: 16px;
+      bottom: 12px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      background: rgba(7, 17, 20, .88);
+      border: 1px solid #35545a;
+      border-radius: 5px;
+      font: 11px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .range-control label,
+    .range-control output {
+      color: #b1c5c6;
+      white-space: nowrap
+    }
+
+    .range-control input {
+      width: clamp(90px, 12vw, 150px);
+      accent-color: var(--accent)
+    }
+
+    .fallback {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+      font: 14px ui-sans-serif, system-ui, sans-serif
+    }
+
+    @media(max-width:760px) {
 
       html,
       body {
-        height: 100%;
-        overflow: hidden
+        height: auto;
+        overflow: auto
       }
 
       .app {
-        height: 100vh;
-        overflow: hidden;
-        display: grid;
-        grid-template-columns: minmax(200px, 24%) 8px minmax(0, 1fr);
-        grid-template-rows: auto 1fr;
-        grid-template-areas:
-          "header header stages"
-          "left   divider stages";
-        background: radial-gradient(circle at 78% 12%, #18373a 0, #071114 42%, #050b0d 100%)
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px
       }
 
       header {
-        grid-area: header;
-        padding: 12px clamp(14px, 3vw, 32px) 10px;
-        border-bottom: 1px solid var(--line);
-        display: flex;
-        flex-direction: column;
-        align-items: start;
-        gap: 6px
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(17px, 2.1vw, 26px);
-        font-weight: 400;
-        letter-spacing: .02em
-      }
-
-      .subtitle {
-        margin: 5px 0 0;
-        color: var(--muted);
-        font: 13px/1.4 ui-sans-serif, system-ui, sans-serif
-      }
-
-      .status {
-        color: var(--accent);
-        font: 12px ui-monospace, monospace;
-        white-space: nowrap
-      }
-
-      .header-row {
-        display: flex;
-        align-items: center;
-        gap: 14px
-      }
-
-      .btn {
-        color: var(--ink);
-        background: #0b181b;
-        border: 1px solid #35545a;
-        border-radius: 4px;
-        padding: 7px 12px;
-        font: 12px ui-sans-serif, system-ui, sans-serif;
-        cursor: pointer
-      }
-
-      .btn:hover {
-        border-color: var(--accent);
-        color: var(--accent)
-      }
-
-      .btn:disabled {
-        opacity: .45;
-        cursor: not-allowed
-      }
-
-      .btn.primary {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #06211d;
-        font-weight: 600
-      }
-
-      .btn.primary:hover {
-        color: #06211d;
-        opacity: .9
-      }
-
-      .modal-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 10;
-        display: grid;
-        place-items: center;
-        background: rgba(4, 10, 12, .72);
-        padding: 20px
-      }
-
-      .modal-overlay[hidden] {
-        display: none
-      }
-
-      .modal {
-        width: min(480px, 100%);
-        max-height: 90vh;
-        overflow: auto;
-        background: linear-gradient(145deg, rgba(25, 47, 51, .97), rgba(10, 22, 25, .99));
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        box-shadow: 0 25px 80px rgba(0, 0, 0, .4)
-      }
-
-      .modal-head {
-        padding: 14px 18px;
-        border-bottom: 1px solid var(--line)
-      }
-
-      .modal-head h2 {
-        margin: 0 0 4px;
-        font: 400 16px Georgia, serif
-      }
-
-      .modal-head p {
-        margin: 0;
-        color: var(--muted);
-        font: 12px ui-sans-serif, system-ui, sans-serif
-      }
-
-      .modal-body {
-        padding: 14px 18px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px 14px
-      }
-
-      .modal-body .field {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        font: 11px ui-sans-serif, system-ui, sans-serif;
-        color: var(--muted)
-      }
-
-      .modal-body .field.span2 {
-        grid-column: 1 / -1
-      }
-
-      .modal-body .field.row {
-        flex-direction: row;
-        align-items: center;
-        gap: 8px
-      }
-
-      .modal-body input[type=number],
-      .modal-body input[type=text] {
-        color: var(--ink);
-        background: #0b181b;
-        border: 1px solid #35545a;
-        border-radius: 4px;
-        padding: 7px 8px;
-        font: 12px ui-sans-serif, system-ui, sans-serif;
-        width: 100%
-      }
-
-      .modal-body input:disabled {
-        opacity: .4
-      }
-
-      .modal-body label.chk {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--ink);
-        font: 12px ui-sans-serif, system-ui, sans-serif
-      }
-
-      .modal-body label.chk input {
-        accent-color: var(--accent)
-      }
-
-      .modal-foot {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 14px 18px;
-        border-top: 1px solid var(--line)
-      }
-
-      .workspace {
-        display: contents
+        padding: 0 0 10px
       }
 
       .left {
-        grid-area: left;
-        min-width: 0;
-        min-height: 0;
         display: grid;
-        grid-template-rows: 1fr 1fr;
-        gap: 14px;
-        padding: 14px 0 18px 18px
-      }
-
-      .divider {
-        grid-area: divider;
-        cursor: col-resize;
-        position: relative;
-        margin: 14px 12px 18px;
-        border-left: 1px solid var(--line)
-      }
-
-      .divider:after {
-        content: "⋮";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: var(--muted);
-        background: #071114;
-        padding: 6px 0;
-        font: 22px serif
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+        gap: 10px;
+        padding: 0
       }
 
       .panel {
-        min-height: 0;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        overflow: hidden;
-        background: linear-gradient(145deg, rgba(25, 47, 51, .9), rgba(10, 22, 25, .95));
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        box-shadow: 0 18px 55px rgba(0, 0, 0, .18)
+        min-height: 200px
       }
 
-      .panel-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 11px 13px;
-        border-bottom: 1px solid var(--line);
-        font: 12px ui-sans-serif, system-ui, sans-serif
-      }
-
-      .panel-head strong {
-        font-weight: 600;
-        letter-spacing: .08em;
-        text-transform: uppercase
-      }
-
-      .panel-head span {
-        color: var(--muted)
-      }
-
-      .preview {
-        min-height: 0;
-        position: relative;
-        display: grid;
-        place-items: center;
-        padding: 12px;
-        background: repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px), repeating-linear-gradient(90deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px)
-      }
-
-      .preview:before {
-        content: "";
-        position: absolute;
-        inset: 12px;
-        border: 1px solid rgba(103, 196, 239, .14);
-        pointer-events: none
-      }
-
-      .preview svg {
-        width: 100%;
-        height: 100%;
-        max-height: 260px;
-        filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .28))
-      }
-
-      .preview path,
-      .preview circle,
-      .preview rect,
-      .preview ellipse,
-      .preview line,
-      .preview polygon,
-      .preview polyline {
-        fill: var(--figure-fill);
-        stroke: var(--figure-edge);
-        stroke-width: 5;
-        vector-effect: non-scaling-stroke;
-        stroke-linejoin: round
-      }
-
-      .controls {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        padding: 9px;
+      .divider {
+        height: 8px;
+        margin: 0;
+        border-left: 0;
         border-top: 1px solid var(--line);
-        font: 12px ui-sans-serif, system-ui, sans-serif
+        cursor: row-resize
       }
 
-      .controls label.chk {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        color: var(--muted);
-        font: 11px ui-sans-serif, system-ui, sans-serif;
-        white-space: nowrap
-      }
-
-      .controls label.chk input {
-        accent-color: var(--accent)
-      }
-
-      .transform-controls {
-        display: flex;
-        flex-basis: 100%;
-        gap: 8px;
-        flex-wrap: wrap
-      }
-
-      .controls .file-control {
-        flex: 0 0 100%;
-        max-width: none
-      }
-
-      select,
-      input[type=file] {
-        min-width: 0;
-        color: var(--ink);
-        background: #0b181b;
-        border: 1px solid #35545a;
-        border-radius: 4px;
-        padding: 7px 8px;
-        font: 12px ui-sans-serif, system-ui, sans-serif
-      }
-
-      select {
-        flex: 1
-      }
-
-      input[type=file] {
-        max-width: 130px;
-        padding: 5px;
-        color: var(--muted)
+      .divider:after {
+        content: "⋯"
       }
 
       .stages {
-        grid-area: stages;
-        min-width: 0;
-        min-height: 0;
-        position: relative;
-        display: grid;
         grid-template-rows: 1fr 1fr;
-        gap: 12px
+        min-height: 58vh;
+        gap: 10px
       }
 
-      .stage {
-        min-width: 0;
-        min-height: 0;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #081417;
-        box-shadow: 0 25px 80px rgba(0, 0, 0, .25)
+      .controls {
+        align-items: stretch;
+        flex-direction: column
       }
 
-      .scene-canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        touch-action: none;
-        cursor: grab
+      input[type=file] {
+        max-width: none
+      }
+    }
+
+    @media(max-width:470px) {
+      .left {
+        grid-template-columns: 1fr
       }
 
-      .scene-canvas.dragging {
-        cursor: grabbing
+      .panel {
+        min-height: 220px
       }
-
-      .hud {
-        position: absolute;
-        inset: 14px 16px auto;
-        display: flex;
-        justify-content: space-between;
-        pointer-events: none;
-        font: 11px ui-monospace, monospace;
-        color: #b1c5c6
-      }
-
-      .hud b {
-        color: var(--accent);
-        font-weight: 400
-      }
-
-      .legend {
-        position: absolute;
-        bottom: 14px;
-        left: 16px;
-        color: #92aaac;
-        font: 11px ui-sans-serif, system-ui, sans-serif;
-        pointer-events: none
-      }
-
-      .scene-controls {
-        position: absolute;
-        right: 16px;
-        bottom: 12px;
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        padding: 8px 10px;
-        background: rgba(7, 17, 20, .88);
-        border: 1px solid #35545a;
-        border-radius: 5px;
-        font: 11px ui-sans-serif, system-ui, sans-serif
-      }
-
-      .range-control {
-        display: flex;
-        align-items: center;
-        gap: 7px
-      }
-
-      .range-control label,
-      .range-control output {
-        color: #b1c5c6;
-        white-space: nowrap
-      }
-
-      .range-control input {
-        width: clamp(90px, 12vw, 150px);
-        accent-color: var(--accent)
-      }
-
-      .fallback {
-        position: absolute;
-        inset: 0;
-        display: grid;
-        place-items: center;
-        padding: 30px;
-        text-align: center;
-        color: var(--muted);
-        font: 14px ui-sans-serif, system-ui, sans-serif
-      }
-
-      @media(max-width:760px) {
-
-        html,
-        body {
-          height: auto;
-          overflow: auto
-        }
-
-        .app {
-          height: auto;
-          min-height: 100vh;
-          overflow: visible;
-          display: flex;
-          flex-direction: column;
-          padding: 10px;
-          gap: 10px
-        }
-
-        header {
-          padding: 0 0 10px
-        }
-
-        .left {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: none;
-          gap: 10px;
-          padding: 0
-        }
-
-        .panel {
-          min-height: 200px
-        }
-
-        .divider {
-          height: 8px;
-          margin: 0;
-          border-left: 0;
-          border-top: 1px solid var(--line);
-          cursor: row-resize
-        }
-
-        .divider:after {
-          content: "⋯"
-        }
-
-        .stages {
-          grid-template-rows: 1fr 1fr;
-          min-height: 58vh;
-          gap: 10px
-        }
-
-        .controls {
-          align-items: stretch;
-          flex-direction: column
-        }
-
-        input[type=file] {
-          max-width: none
-        }
-      }
-
-      @media(max-width:470px) {
-        .left {
-          grid-template-columns: 1fr
-        }
-
-        .panel {
-          min-height: 220px
-        }
-      }
+    }
   </style>
 </head>
 
@@ -571,8 +571,8 @@
         <article class="panel front">
           <div class="panel-head"><strong>Front view</strong><span id="frontName">Arrow 3</span></div>
           <div class="preview" id="frontPreview"></div>
-          <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input class="file-control" id="frontFile"
-              type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG">
+          <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input class="file-control"
+              id="frontFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG">
             <div class="transform-controls">
               <label class="chk"><input type="checkbox" id="frontFlipV"> Flip V</label>
               <label class="chk"><input type="checkbox" id="frontFlipH"> Flip H</label>
@@ -583,8 +583,8 @@
         <article class="panel back">
           <div class="panel-head"><strong>Rear view</strong><span id="backName">Car</span></div>
           <div class="preview" id="backPreview"></div>
-          <div class="controls"><select id="backSelect" aria-label="Rear SVG"></select><input class="file-control" id="backFile" type="file"
-              accept="image/svg+xml,.svg" aria-label="Upload rear SVG">
+          <div class="controls"><select id="backSelect" aria-label="Rear SVG"></select><input class="file-control"
+              id="backFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload rear SVG">
             <div class="transform-controls">
               <label class="chk"><input type="checkbox" id="backFlipV"> Flip V</label>
               <label class="chk"><input type="checkbox" id="backFlipH"> Flip H</label>
@@ -606,7 +606,8 @@
         </div>
         <div class="scene-controls">
           <div class="range-control"><label for="sampleSlider">Samples</label><input id="sampleSlider" type="range"
-              min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output id="sampleValue">248</output></div>
+              min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output id="sampleValue">248</output>
+          </div>
           <div class="range-control"><label for="heightSlider">Height</label><input id="heightSlider" type="range"
               min="0" max="1.5" step="0.01" value="0" aria-label="Object height"></div>
         </div>
@@ -617,18 +618,27 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
       <div class="modal-head">
         <h2 id="exportModalTitle">Export to OpenSCAD</h2>
-        <p>Set starting values for the print — everything here stays editable in OpenSCAD, in the code or the Customizer.</p>
+        <p>Set starting values for the print — everything here stays editable in OpenSCAD, in the code or the
+          Customizer.</p>
       </div>
       <div class="modal-body">
-        <label class="field"><span>Overall width (mm)</span><input type="number" id="scadOverallWidth" step="1" min="1"></label>
-        <label class="field"><span>Ribbon thickness (mm)</span><input type="number" id="scadRibbonThickness" step="0.5" min="0.1"></label>
-        <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadWallThickness" step="0.1" min="0.1"></label>
+        <label class="field"><span>Overall width (mm)</span><input type="number" id="scadOverallWidth" step="1"
+            min="1"></label>
+        <label class="field"><span>Ribbon thickness (mm)</span><input type="number" id="scadRibbonThickness" step="0.5"
+            min="0.1"></label>
+        <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadWallThickness" step="0.1"
+            min="0.1"></label>
         <label class="field row"><input type="checkbox" id="scadAddLegs" checked><span>Add three legs</span></label>
-        <label class="field"><span>Leg diameter (mm)</span><input type="number" id="scadLegDiameter" step="0.1" min="0.1"></label>
-        <label class="field"><span>Leg extension length (mm)</span><input type="number" id="scadLegExtension" step="0.5" min="0"></label>
-        <label class="field"><span>Leg flare (mm)</span><input type="number" id="scadLegFlare" step="0.5" min="0"></label>
-        <label class="field"><span>Foot height (mm)</span><input type="number" id="scadFootHeight" step="0.5" min="0"></label>
-        <label class="field"><span>Foot width (mm)</span><input type="number" id="scadFootWidth" step="0.5" min="0"></label>
+        <label class="field"><span>Leg diameter (mm)</span><input type="number" id="scadLegDiameter" step="0.1"
+            min="0.1"></label>
+        <label class="field"><span>Leg extension length (mm)</span><input type="number" id="scadLegExtension" step="0.5"
+            min="0"></label>
+        <label class="field"><span>Leg flare (mm)</span><input type="number" id="scadLegFlare" step="0.5"
+            min="0"></label>
+        <label class="field"><span>Foot height (mm)</span><input type="number" id="scadFootHeight" step="0.5"
+            min="0"></label>
+        <label class="field"><span>Foot width (mm)</span><input type="number" id="scadFootWidth" step="0.5"
+            min="0"></label>
       </div>
       <div class="modal-foot">
         <button type="button" class="btn" id="exportCancel">Cancel</button>
@@ -848,7 +858,8 @@ parametric_ribbon(curve_points_mm);
 if (add_legs) legs_for_curve(curve_points_mm);
 `;
     function scadCurvePoints(mesh) { const rows = []; for (let i = 0; i < mesh.length; i += 3) rows.push(`    [${mesh[i].toFixed(6)}, ${mesh[i + 1].toFixed(6)}, ${mesh[i + 2].toFixed(6)}]`); return rows.join(',\n') }
-    function generateScad(params) { return `// Impossible cylinder: ${$('frontName').textContent} (front) + ${$('backName').textContent} (back)
+    function generateScad(params) {
+      return `// Impossible cylinder: ${$('frontName').textContent} (front) + ${$('backName').textContent} (back)
 // Exported from the Impossible Cylinders web app.
 // Tweak the parameters below directly, or via Window > Customizer in OpenSCAD.
 // Press F5 to preview, F6 to render, then export as STL for printing.
@@ -880,7 +891,8 @@ ${scadCurvePoints(state.mesh)}
 curve_points_mm = [
     for (p = curve_points) [ p[0] * overall_width, p[1] * overall_width, p[2] * overall_width ]
 ];
-${SCAD_MODULES}` }
+${SCAD_MODULES}`
+    }
     function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name($('frontName').textContent)}-${name($('backName').textContent)}.scad` }
     function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegDiameter', 'scadLegExtension', 'scadLegFlare', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on }
     function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } const width = 90; $('scadOverallWidth').value = width; $('scadRibbonThickness').value = state.height > 0 ? +(state.height * width).toFixed(2) : 20; $('scadWallThickness').value = 3; $('scadAddLegs').checked = true; $('scadLegDiameter').value = 3; $('scadLegExtension').value = 5; $('scadLegFlare').value = 2; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
