@@ -574,9 +574,8 @@
           <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input class="file-control"
               id="frontFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG">
             <div class="transform-controls">
-              <label class="chk"><input type="checkbox" id="frontFlipV"> Flip V</label>
-              <label class="chk"><input type="checkbox" id="frontFlipH"> Flip H</label>
-              <label class="chk"><input type="checkbox" id="frontRotate180"> 180°</label>
+              <label class="chk"><input type="checkbox" id="frontFlipV"> Flip Vertical</label>
+              <label class="chk"><input type="checkbox" id="frontFlipH"> Flip Horizontal</label>
             </div>
           </div>
         </article>
@@ -586,9 +585,8 @@
           <div class="controls"><select id="backSelect" aria-label="Rear SVG"></select><input class="file-control"
               id="backFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload rear SVG">
             <div class="transform-controls">
-              <label class="chk"><input type="checkbox" id="backFlipV"> Flip V</label>
-              <label class="chk"><input type="checkbox" id="backFlipH"> Flip H</label>
-              <label class="chk"><input type="checkbox" id="backRotate180"> 180°</label>
+              <label class="chk"><input type="checkbox" id="backFlipV"> Flip Vertical</label>
+              <label class="chk"><input type="checkbox" id="backFlipH"> Flip Horizontal</label>
             </div>
           </div>
         </article>
@@ -610,6 +608,7 @@
           </div>
           <div class="range-control"><label for="heightSlider">Height</label><input id="heightSlider" type="range"
               min="0" max="1.5" step="0.01" value="0" aria-label="Object height"></div>
+          <button type="button" class="btn" id="resetViewBtn">Reset View</button>
         </div>
       </section>
     </main>
@@ -650,7 +649,8 @@
     import * as THREE from './three.module.js';
     const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left).svg', 'Arrow (up).svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Egg.svg', 'Fire.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Rabbit.svg', 'Sneaker.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
     const DEMOS = { 'Arrow 3.svg': { viewBox: '0 0 612 792', markup: '<path d="M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z"/>' }, 'Car.svg': { viewBox: '0 0 612 792', markup: '<path d="M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z"/>' } };
-    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false, rotate180: false }, back: { flipH: false, flipV: false, rotate180: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], height: 0, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false }, back: { flipH: false, flipV: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const DEFAULT_CAMERA = { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 };
     const $ = id => document.getElementById(id), sceneFront = $('sceneFront'), sceneBack = $('sceneBack');
     let rendererFront, rendererBack, cameraFront, cameraBack, world, meshGroup, axisGroup, topEdgeGroup, resizeObserver;
     function options() { for (const id of ['frontSelect', 'backSelect']) $(id).innerHTML = SVG_FILES.map(n => `<option value="${n}">${n.replace(/\.svg$/i, '')}</option>`).join(''); $('frontSelect').value = 'Circle.svg'; $('backSelect').value = 'Square (Diamond).svg'; }
@@ -664,7 +664,7 @@
     function buildClosedPathD(points) { return 'M ' + points.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(' L ') + ' Z' }
     function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; svg.innerHTML = data.markup; document.body.appendChild(svg); try { const b = svg.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
     function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.markup}</svg>` }
-    function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); if (f.rotate180) parts.push('rotate(180deg)'); return parts.join(' ') }
+    function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); return parts.join(' ') }
     function show(which, data, name) { state[which] = data; const svg = $(`${which}Preview`); svg.innerHTML = preview(data); svg.firstElementChild.style.transform = previewTransformCSS(which); svg.firstElementChild.style.transformOrigin = 'center'; $(`${which}Name`).textContent = name.replace(/\.svg$/i, ''); build() }
     function parse(text) {
       const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
@@ -707,7 +707,6 @@
       let negateX = baseRotate180, negateY = baseRotate180;
       if (userFlags.flipH) negateX = !negateX;
       if (userFlags.flipV) negateY = !negateY;
-      if (userFlags.rotate180) { negateX = !negateX; negateY = !negateY }
       if (negateX || negateY) normalized.forEach(p => { if (negateX) p[0] *= -1; if (negateY) p[1] *= -1 });
       const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]);
       const yAt = (x, upper) => {
@@ -904,7 +903,7 @@ ${SCAD_MODULES}`
     function resize() { if (!rendererFront) return; resizeOne(cameraFront, sceneFront, rendererFront); resizeOne(cameraBack, sceneBack, rendererBack); updateCamera() }
     function render() { updateCamera(); requestAnimationFrame(render) }
     function wireOrbit(canvasEl) { canvasEl.onpointerdown = e => { canvasEl.setPointerCapture(e.pointerId); canvasEl.classList.add('dragging'); state.drag = { x: e.clientX } }; canvasEl.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; canvasEl.onpointerup = canvasEl.onpointercancel = () => { state.drag = null; canvasEl.classList.remove('dragging') }; canvasEl.onwheel = e => { e.preventDefault(); state.camera.zoom = Math.max(.3, Math.min(8, state.camera.zoom * Math.exp(-e.deltaY * .001))) } }
-    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV'], ['Rotate180', 'rotate180']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); topEdgeGroup = new THREE.Group(); world.add(meshGroup, axisGroup, topEdgeGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('heightSlider').oninput = e => { state.height = Number(e.target.value); rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
