@@ -631,7 +631,7 @@
       <div class="modal-body">
         <label class="field"><span>Overall width (mm)</span><input type="number" id="scadOverallWidth" step="1" min="40"
             max="150"></label>
-        <label class="field"><span>Ribbon height (mm)</span><input type="number" id="scadRibbonThickness" step="1"
+        <label class="field"><span>Overall height (mm)</span><input type="number" id="scadRibbonThickness" step="1"
             min="1" max="100"></label>
         <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadWallThickness" step="0.1"
             min="1" max="10"></label>
@@ -663,7 +663,11 @@
     const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], widthMM: 90, heightMM: 20, thicknessMM: 3, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false }, back: { flipH: false, flipV: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
     const CURVE_SAMPLE_SPAN = 0.65;
     const REFERENCE_WIDTH_MM = 90;
-    function normalizedHeight() { return state.heightMM / state.widthMM * CURVE_SAMPLE_SPAN }
+    // The rounded caps add wall_thickness of extra extent on top of the top-to-bottom rail
+    // drop, so the rail drop needed for a given overall height is (height - thickness), not
+    // height itself; clamped at 0 so a thickness bigger than the height just yields a lozenge.
+    function ribbonDropMM(overallHeightMM, thicknessMM) { return Math.max(overallHeightMM - thicknessMM, 0) }
+    function normalizedHeight() { return ribbonDropMM(state.heightMM, state.thicknessMM) / state.widthMM * CURVE_SAMPLE_SPAN }
     const DEFAULT_CAMERA = { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 };
     const $ = id => document.getElementById(id), sceneFront = $('sceneFront'), sceneBack = $('sceneBack');
     let rendererFront, rendererBack, cameraFront, cameraBack, world, modelGroup, meshGroup, axisGroup, resizeObserver;
@@ -925,8 +929,13 @@ if (add_legs) legs_for_curve(curve_points_mm);
 
 /* [Overall dimensions] */
 overall_width = ${params.overallWidth};     // overall size scale for the whole object (mm) - everything else scales with this
-ribbon_height = ${params.ribbonThickness}; // vertical drop of the ribbon band at each point (mm)
+overall_height = ${params.overallHeight};    // total height of the ribbon band at each point, top to bottom (mm)
 wall_thickness = ${params.wallThickness};      // wall thickness of the ribbon band (mm)
+
+// Distance between the top and bottom rail centers. The rounded caps swept from wall_thickness
+// add that much extra extent on top of this drop, so subtracting it here is what makes
+// overall_height equal the object's true top-to-bottom height.
+ribbon_height = max(overall_height - wall_thickness, 0);
 
 /* [Legs] */
 add_legs = ${params.addLegs};       // add three support legs at 120-degree spacing
@@ -958,7 +967,7 @@ ${SCAD_MODULES}`
     function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegDiameter', 'scadLegExtension', 'scadLegFlare', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on }
     function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } $('scadOverallWidth').value = state.widthMM; $('scadRibbonThickness').value = state.heightMM; $('scadWallThickness').value = state.thicknessMM; $('scadAddLegs').checked = true; $('scadLegDiameter').value = 3; $('scadLegExtension').value = 5; $('scadLegFlare').value = 2; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
     function closeExportModal() { $('exportModal').hidden = true }
-    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, ribbonThickness: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legExtension: +$('scadLegExtension').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
+    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legExtension: +$('scadLegExtension').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
     function camPos(azimuth) { const e = state.camera.elevation, d = state.camera.distance; return new THREE.Vector3(d * Math.cos(e) * Math.sin(azimuth), d * Math.cos(e) * Math.cos(azimuth), d * Math.sin(e)) }
     function updateCamera() { if (!state.axisOrigin || !rendererFront) return; const target = new THREE.Vector3(...state.axisOrigin).multiplyScalar(state.widthMM / REFERENCE_WIDTH_MM); cameraFront.position.copy(target).add(camPos(state.camera.azimuth)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix(); cameraBack.position.copy(target).add(camPos(state.camera.azimuth + Math.PI)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix(); rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack) }
     function resizeOne(cam, canvasEl, renderer) { const r = canvasEl.getBoundingClientRect(), aspect = (r.width / r.height) || 1; cam.left = -aspect * 1.05; cam.right = aspect * 1.05; cam.top = 1.05; cam.bottom = -1.05; cam.updateProjectionMatrix(); renderer.setSize(r.width, r.height, false) }
