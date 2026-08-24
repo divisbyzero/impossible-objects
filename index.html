@@ -672,7 +672,7 @@
     // widthMM/heightMM/thicknessMM are the real-world (mm) values the user sets; the 3D
     // preview stays in the app's normalized coordinate space, so heightMM is converted via
     // normalizedHeight() using the same curve_sample_span ratio the OpenSCAD export uses.
-    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], widthMM: 90, heightMM: 20, thicknessMM: 3, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false }, back: { flipH: false, flipV: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], widthMM: 80, heightMM: 7, thicknessMM: 3, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false }, back: { flipH: false, flipV: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
     const CURVE_SAMPLE_SPAN = 0.65;
     const REFERENCE_WIDTH_MM = 90;
     // The rounded caps add wall_thickness of extra extent on top of the top-to-bottom rail
