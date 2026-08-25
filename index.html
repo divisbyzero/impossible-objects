@@ -692,8 +692,8 @@
     function sampleSegmentPoints(el, count = 400) { const total = el.getTotalLength(), pts = []; for (let i = 0; i <= count; i++) { const p = shapePoint(el, total * i / count); pts.push([p.x, p.y]) } return pts }
     function stitchSegments(segments) { const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]), eps = 1e-6, used = segments.map(() => false); let chain = segments[0].slice(); used[0] = true; for (let remaining = segments.length - 1; remaining > 0; remaining--) { const tail = chain[chain.length - 1]; let best = -1, bestFlip = false, bestDist = Infinity; for (let i = 0; i < segments.length; i++) { if (used[i]) continue; const seg = segments[i], dStart = dist(tail, seg[0]), dEnd = dist(tail, seg[seg.length - 1]); if (dStart < bestDist) { bestDist = dStart; best = i; bestFlip = false } if (dEnd < bestDist) { bestDist = dEnd; best = i; bestFlip = true } } const pts = bestFlip ? segments[best].slice().reverse() : segments[best]; for (const p of pts) if (dist(chain[chain.length - 1], p) > eps) chain.push(p); used[best] = true } return chain }
     function buildClosedPathD(points) { return 'M ' + points.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(' L ') + ' Z' }
-    function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; svg.innerHTML = data.markup; document.body.appendChild(svg); try { const b = svg.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
-    function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.markup}</svg>` }
+    function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; svg.innerHTML = data.previewMarkup || data.markup; document.body.appendChild(svg); try { const b = svg.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
+    function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.previewMarkup || data.markup}</svg>` }
     function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); return parts.join(' ') }
     function show(which, data, name) { state[which] = data; const svg = $(`${which}Preview`); svg.innerHTML = preview(data); svg.firstElementChild.style.transform = previewTransformCSS(which); svg.firstElementChild.style.transformOrigin = 'center'; $(`${which}Name`).textContent = name.replace(/\.svg$/i, ''); build() }
     function parse(text) {
@@ -713,12 +713,16 @@
       try {
         const candidates = visibleCandidates(measure, viewBox);
         if (!candidates.length) throw Error('SVG needs a visible path, circle, rect, ellipse, line, or polygon');
-        if (candidates.length === 1) return { viewBox, markup: candidates[0].outerHTML };
+        const previewMarkup = candidates.map(el => el.outerHTML).join('');
+        if (candidates.length === 1) return { viewBox, markup: candidates[0].outerHTML, previewMarkup };
         // Multiple curve pieces (e.g. several GeoGebra objects making up one outline):
         // sample each, then stitch them end-to-end into a single closed loop, snapping
         // to whichever free endpoint is nearest even if the pieces don't meet exactly.
+        // This stitched path drives the 3D geometry, which needs one continuous outline;
+        // the preview keeps the original separate shapes so it doesn't show the
+        // straight connector segments stitching introduces between them.
         const chain = stitchSegments(candidates.map(el => sampleSegmentPoints(el)));
-        return { viewBox, markup: `<path d="${buildClosedPathD(chain)}"/>` };
+        return { viewBox, markup: `<path d="${buildClosedPathD(chain)}"/>`, previewMarkup };
       } finally { measure.remove() }
     }
     function choose(which, name) { const token = ++state.loadToken[which]; if (DEMOS[name]) return show(which, DEMOS[name], name); $('status').textContent = 'LOADING / ' + name; fetch(`curve_defs/svg/${encodeURIComponent(name)}`).then(r => { if (!r.ok) throw Error(`HTTP ${r.status}`); return r.text() }).then(t => { if (token === state.loadToken[which]) show(which, parse(t), name) }).catch(error => { if (token === state.loadToken[which]) $('status').textContent = 'COULD NOT LOAD / ' + name }) }
