@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>About / Instructions — Impossible Cylinders</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #edf4f2;
+      --muted: #9bb0ae;
+      --line: #294348;
+      --panel: #102024;
+      --accent: #67c4ef;
+      --figure: #3188b8;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #071114;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 78% 12%, #18373a 0, #071114 42%, #050b0d 100%);
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: clamp(20px, 5vw, 56px) clamp(16px, 4vw, 32px) 80px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-weight: 400;
+      font-size: clamp(24px, 4vw, 34px);
+      letter-spacing: .01em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font: 15px/1.5 ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .btn {
+      display: inline-block;
+      color: var(--ink);
+      background: #0b181b;
+      border: 1px solid #35545a;
+      border-radius: 4px;
+      padding: 9px 16px;
+      font: 13px ui-sans-serif, system-ui, sans-serif;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #06211d;
+      font-weight: 600;
+    }
+
+    .btn.primary:hover {
+      color: #06211d;
+      opacity: .9;
+    }
+
+    h2 {
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 40px 0 6px;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    h2 .step-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--figure);
+      color: #eaf7ff;
+      font-size: 13px;
+      margin-right: 10px;
+      vertical-align: -6px;
+    }
+
+    p, li {
+      font: 15px/1.65 ui-sans-serif, system-ui, sans-serif;
+      color: #d7e4e2;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin: 10px 0;
+    }
+
+    code {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 1px 6px;
+      font: 13px ui-monospace, monospace;
+      color: var(--accent);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 14px 0;
+    }
+
+    .card p:first-child {
+      margin-top: 0;
+    }
+
+    .card p:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .note {
+      border-left: 3px solid var(--accent);
+      padding: 2px 0 2px 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      margin-top: 56px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font: 13px ui-sans-serif, system-ui, sans-serif;
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Impossible Cylinders</h1>
+      <p class="subtitle">One solid object that shows a different silhouette from each side — design one in your
+        browser, then 3D print it.</p>
+      <div class="top-links">
+        <a class="btn primary" href="index.html">Open the Designer</a>
+        <a class="btn" href="https://openscad.org/downloads.html">Download OpenSCAD</a>
+        <a class="btn" href="https://github.com/divisbyzero/Impossible-Cylinders">View Source on GitHub</a>
+      </div>
+    </header>
+
+    <p>An <em>impossible cylinder</em> (also called an ambiguous cylinder) is a single 3D shape that casts one
+      silhouette when viewed from the front and a completely different one from the side — a circle that's secretly
+      also a square, a heart that's secretly also an infinity symbol, and so on. This tool lets you pick any two
+      shapes, preview the object that reconciles them, and export a file you can 3D print at home.</p>
+
+    <h2><span class="step-no">1</span>Design your object in the browser</h2>
+    <div class="card">
+      <p>Open the <a href="index.html">Designer</a>. Choose a shape for the front view and a shape for the back view
+        from the dropdown lists (or upload your own SVG outline). The 3D preview updates live so you can see the
+        object from both angles before committing to anything.</p>
+      <p>Adjust the width, height, and wall thickness sliders until you're happy with the proportions.</p>
+    </div>
+
+    <h2><span class="step-no">2</span>Export to OpenSCAD</h2>
+    <div class="card">
+      <p>Click <strong>Export to OpenSCAD</strong>. This downloads a self-contained <code>.scad</code> file with your
+        chosen dimensions already filled in — including optional legs/feet so the model can stand upright.</p>
+      <p class="note">Everything in the export stays editable afterward, either by editing the numbers at the top of
+        the file or using OpenSCAD's built-in Customizer panel (Window &rarr; Customizer).</p>
+    </div>
+
+    <h2><span class="step-no">3</span>Install OpenSCAD</h2>
+    <div class="card">
+      <p>OpenSCAD is the free, open-source program that turns the exported <code>.scad</code> file into a solid 3D
+        model. If you don't already have it installed, download it here:</p>
+      <p><a class="btn primary" href="https://openscad.org/downloads.html">openscad.org/downloads.html</a></p>
+      <p>It's available for Windows, macOS, and Linux, and the download and install take just a couple of minutes.
+      </p>
+    </div>
+
+    <h2><span class="step-no">4</span>Render and export an STL</h2>
+    <div class="card">
+      <ol>
+        <li>Open the downloaded <code>.scad</code> file in OpenSCAD.</li>
+        <li>Press <strong>F5</strong> to preview the model.</li>
+        <li>Press <strong>F6</strong> to do a full-resolution render.</li>
+        <li>Go to <strong>File &rarr; Export &rarr; Export as STL</strong> to save a file ready for printing.</li>
+      </ol>
+    </div>
+
+    <h2><span class="step-no">5</span>Print it</h2>
+    <div class="card">
+      <p>Send the <code>.stl</code> file to your slicer (e.g. PrusaSlicer, Bambu Studio, Cura) as you would any other
+        model, then print. No special settings are usually required — standard supports may help for the overhanging
+        curves depending on your printer and chosen shapes.</p>
+    </div>
+
+    <h2>Don't have a 3D printer?</h2>
+    <p>You can still explore the shapes in the Designer and export the <code>.scad</code>/<code>.stl</code> files to
+      send to a print service, a local library or makerspace with a printer, or a friend who has one.</p>
+
+    <footer>
+      Built with <a href="https://threejs.org/">three.js</a> and <a href="https://openscad.org/">OpenSCAD</a>. Source
+      and curve definitions available on <a href="https://github.com/divisbyzero/Impossible-Cylinders">GitHub</a>.
+    </footer>
+  </div>
+</body>
+
+</html>
