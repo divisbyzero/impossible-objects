@@ -182,25 +182,16 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Impossible Cylinders</h1>
-      <p class="subtitle">One solid object that shows a different silhouette from each side — design one in your
-        browser, then 3D print it.</p>
-      <div class="top-links">
-        <a class="btn primary" href="index.html">Open the Designer</a>
-        <a class="btn" href="https://openscad.org/downloads.html">Download OpenSCAD</a>
-        <a class="btn" href="https://github.com/divisbyzero/Impossible-Cylinders">View Source on GitHub</a>
-      </div>
+      <h1>Instructions for Designing Your Own Impossible Objects</h1>
     </header>
 
-    <p>An <em>impossible cylinder</em> (also called an ambiguous cylinder) is a single 3D shape that casts one
-      silhouette when viewed from the front and a completely different one from the side — a circle that's secretly
-      also a square, a heart that's secretly also an infinity symbol, and so on. This tool lets you pick any two
-      shapes, preview the object that reconciles them, and export a file you can 3D print at home.</p>
+    <p>An impossible object (also called an impossible cylinder or an ambiguous cylinder) is a 3D shape that looks like one object when viewed from the front and a completely different one from the back—a circle and a square, a heart and an infinity symbol, and so on. This tool lets you pick any two
+      shapes (or upload your own), preview the resulting impossible object, and export a file you can 3D print at home. </p>
 
-    <h2><span class="step-no">1</span>Design your object in the browser</h2>
+    <h2><span class="step-no">1</span>Design your impossible object in the browser</h2>
     <div class="card">
       <p>Open the <a href="index.html">Designer</a>. Choose a shape for the front view and a shape for the back view
-        from the dropdown lists (or upload your own SVG outline). The 3D preview updates live so you can see the
+        from the dropdown lists or upload your own <code>.svg</code> files. (See below for recommendations on how to design your own shapes). The 3D preview updates live so you can see the
         object from both angles before committing to anything.</p>
       <p>Adjust the width, height, and wall thickness sliders until you're happy with the proportions.</p>
     </div>
@@ -208,27 +199,25 @@
     <h2><span class="step-no">2</span>Export to OpenSCAD</h2>
     <div class="card">
       <p>Click <strong>Export to OpenSCAD</strong>. This downloads a self-contained <code>.scad</code> file with your
-        chosen dimensions already filled in — including optional legs/feet so the model can stand upright.</p>
-      <p class="note">Everything in the export stays editable afterward, either by editing the numbers at the top of
+        chosen dimensions prepopulated, including optional legs so the model can stand upright.</p>
+      <p>The parameters in the exported file are editable afterward, either by editing the numbers at the top of
         the file or using OpenSCAD's built-in Customizer panel (Window &rarr; Customizer).</p>
     </div>
 
     <h2><span class="step-no">3</span>Install OpenSCAD</h2>
     <div class="card">
       <p>OpenSCAD is the free, open-source program that turns the exported <code>.scad</code> file into a solid 3D
-        model. If you don't already have it installed, download it here:</p>
+        model. Download it for Windows, macOS, or Linux here.</p>
       <p><a class="btn primary" href="https://openscad.org/downloads.html">openscad.org/downloads.html</a></p>
-      <p>It's available for Windows, macOS, and Linux, and the download and install take just a couple of minutes.
-      </p>
     </div>
 
     <h2><span class="step-no">4</span>Render and export an STL</h2>
     <div class="card">
       <ol>
-        <li>Open the downloaded <code>.scad</code> file in OpenSCAD.</li>
-        <li>Press <strong>F5</strong> to preview the model.</li>
-        <li>Press <strong>F6</strong> to do a full-resolution render.</li>
-        <li>Go to <strong>File &rarr; Export &rarr; Export as STL</strong> to save a file ready for printing.</li>
+        <li>Open the <code>.scad</code> file in OpenSCAD.</li>
+        <li>Press the <strong>Preview</strong> or use the <strong>Design &rarr; Preview</strong> menu item to preview the model.</li>
+        <li>Press the <strong>Render</strong> button or use the <strong>Design &rarr; Render</strong> menu item to do a full-resolution render.</li>
+        <li>Press the <strong>STL</strong> button or use the <strong>File &rarr; Export &rarr; Export as STL</strong> menu item to save the <code>.stl</code> file.</li>
       </ol>
     </div>
 
@@ -239,14 +228,6 @@
         curves depending on your printer and chosen shapes.</p>
     </div>
 
-    <h2>Don't have a 3D printer?</h2>
-    <p>You can still explore the shapes in the Designer and export the <code>.scad</code>/<code>.stl</code> files to
-      send to a print service, a local library or makerspace with a printer, or a friend who has one.</p>
-
-    <footer>
-      Built with <a href="https://threejs.org/">three.js</a> and <a href="https://openscad.org/">OpenSCAD</a>. Source
-      and curve definitions available on <a href="https://github.com/divisbyzero/Impossible-Cylinders">GitHub</a>.
-    </footer>
   </div>
 </body>
 
