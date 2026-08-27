@@ -1008,8 +1008,11 @@
         }
       }
       const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); meshGroup.add(new THREE.Mesh(geometry, material));
-      const origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xf2b35b });
-      for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, AXIS_LENGTH), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) }
+      // axisGroup is scaled along with the rest of modelGroup by widthMM/REFERENCE_WIDTH_MM,
+      // so dividing the length by that same factor here keeps the drawn axes a constant
+      // length on screen regardless of the object's width setting.
+      const origin = new THREE.Vector3(...state.axisOrigin), axisMaterial = new THREE.LineBasicMaterial({ color: 0xf2b35b }), axisLength = AXIS_LENGTH / (state.widthMM / REFERENCE_WIDTH_MM);
+      for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]) { const end = origin.clone().addScaledVector(direction, axisLength), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin, end]), axisMaterial); axisGroup.add(line) }
     }
     const SCAD_MODULES = `
 // Lowest level reached by the figure: lowest curve point, minus the ribbon
