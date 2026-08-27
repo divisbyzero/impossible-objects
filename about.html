@@ -188,15 +188,15 @@
 
     <h2 id="svg-shape"><span class="step-no">1</span>Design your impossible object</h2>
     <div class="card">
-      <p>Open the <a href="index.html">designer</a> and choose Image 1 and Image 2 shapes from the
+      <p>Choose two shapes from the
         dropdown menus. </p>
       <p>To use your own shape, upload an <code>.svg</code> file. Your curve
         must have the following properties.</p>
       <ul>
         <li>It must be a single closed curve, like the sample shapes.</li>
         <li>Every vertical line must cross the curve at exactly one or two points—no indentations from the sides. In mathematical terms, the curve must be bounded above and below by the graphs of two functions
-          of <em>x</em>. Any indentations that violate this will be ignored.</li>
-        <li>Size doesn't matter. The shapes are scaled automatically to match.</li>
+          of <em>x</em>. Indentations that violate this rule will not be visible in the final model.</li>
+        <li>Size doesn't matter. The two shapes are scaled automatically to match.</li>
       </ul>
       <p>Use any vector drawing program or a graphing tool like <a href="https://www.geogebra.org/">GeoGebra</a>
         if you'd rather define the curve mathematically. Export the file as an <code>.svg</code>.</p>
@@ -231,6 +231,7 @@
         <li>These shapes touch the build plate at only a few small points and most of the shape is unsupported, so adding temporary printing support is essential.</li>
         <li>A brim helps keep the object anchored to the plate.</li>
         <li>Slowing the print speed can improve adhesion and reduce the chance of failure.</li>
+        <li>The legs can be thin and fragile, especially where they connect to the main body. Be careful when removing the support structures so the legs don't break.</li>
       </ul>
     </div>
 
