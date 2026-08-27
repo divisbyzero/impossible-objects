@@ -6,7 +6,8 @@ silhouette from the rear (or in a mirror placed behind them). Pick two 2D
 curves, preview the resulting 3D form live, and export a ready-to-print
 OpenSCAD file.
 
-Try it live: open `index.html` in a modern browser (Chrome, Firefox, Safari,
+Try it live: **[divisbyzero.github.io/impossible-objects](https://divisbyzero.github.io/impossible-objects/)**
+(or open `index.html` locally in a modern browser — Chrome, Firefox, Safari,
 Edge — anything with WebGL).
 
 ## How it works
@@ -65,6 +66,9 @@ Instructions panel and `about.html`.
 | `three.core.js`, `three.module.js` | Vendored [Three.js](https://threejs.org/) build used for the 3D preview |
 | `curve_defs/svg/` | Built-in shape library shown in the dropdown menus |
 | `photos/` | Reference photos used in the instructions (mirror/shadow viewing techniques) |
+| `dowel-stand.scad` | Printable stand + angled viewing window for displaying an object on a 7 mm dowel |
+| `lazy-susan.scad`, `lazy-susan.json` | Printable lazy-susan mount plate for an impossible object, with an OpenSCAD Customizer parameter preset |
+| `mirror_stand.scad` | Printable leaning mirror stand for viewing the rear-silhouette illusion via reflection |
 
 ## Running locally
 
