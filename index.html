@@ -39,12 +39,12 @@
     html,
     body {
       height: 100%;
-      overflow: hidden
+      overflow: auto
     }
 
     .app {
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
+      overflow: visible;
       display: grid;
       grid-template-columns: minmax(200px, 24%) 8px minmax(0, 1fr);
       grid-template-rows: auto 1fr;
