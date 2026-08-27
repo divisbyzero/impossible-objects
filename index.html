@@ -1085,7 +1085,9 @@ ${SCAD_MODULES}`
     function camPos(azimuth, elevation, distance) { return new THREE.Vector3(distance * Math.cos(elevation) * Math.sin(azimuth), distance * Math.cos(elevation) * Math.cos(azimuth), distance * Math.sin(elevation)) }
     function updateCamera() {
       if (!state.axisOrigin || !rendererFront) return;
-      const target = new THREE.Vector3(...state.axisOrigin).multiplyScalar(state.widthMM / REFERENCE_WIDTH_MM);
+      const scale = state.widthMM / REFERENCE_WIDTH_MM;
+      const target = new THREE.Vector3(...state.axisOrigin).multiplyScalar(scale);
+      target.z -= normalizedHeight() / 2 * scale;
       const { azimuth, elevation, distance } = state.camera;
       cameraFront.position.copy(target).add(camPos(azimuth, elevation, distance)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix();
       cameraBack.position.copy(target).add(camPos(azimuth + Math.PI, elevation, distance)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix();
