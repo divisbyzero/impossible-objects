@@ -182,47 +182,37 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Instructions for Designing Your Own Impossible Objects</h1>
+      <h1>Instructions</h1>
     </header>
 
-    <p>An impossible object (also called an impossible cylinder or an ambiguous cylinder) is a 3D shape that looks
-      like one object from the front and a completely different one from the back — a circle and a square, a heart
-      and an infinity symbol, and so on. Pick any two shapes, preview the result, and export a file to 3D print at
-      home.</p>
 
-    <h2><span class="step-no">1</span>Design your impossible object in the browser</h2>
+    <h2 id="svg-shape"><span class="step-no">1</span>Design your impossible object</h2>
     <div class="card">
-      <p>Open the <a href="index.html">Designer</a> and choose a front-view shape and a back-view shape from the
-        dropdowns, or upload your own <code>.svg</code> files (see step 2). The 3D preview updates live and can be
-        rotated. Adjust the orientation, width, height, and wall thickness sliders until you're happy with it.</p>
-    </div>
-
-    <h2 id="svg-shape"><span class="step-no">2</span>Design your own <code>.svg</code> shape (optional)</h2>
-    <div class="card">
-      <p>If the built-in shapes don't cover it, upload your own <code>.svg</code> for either view. The curve just
-        needs to follow a couple of rules:</p>
+      <p>Open the <a href="index.html">designer</a> and choose a front- and a back-view shapes from the
+        dropdowns. </p>
+      <p>To use your own shape instead of a built-in one, upload an <code>.svg</code> for either view. Your curve
+        must have a few specific properties.</p>
       <ul>
-        <li>It must be a single closed curve, like the sample shapes in the Designer.</li>
-        <li>Every vertical line must cross it at exactly one or two points — no horizontal indentations. (It doesn't
-          need to be convex.) Equivalently, the curve must be bounded above and below by the graphs of two functions
+        <li>It must be a single closed curve, like the sample shapes in the designer.</li>
+        <li>Every vertical line must cross it at exactly one or two points—no horizontal indentations. Equivalently, the curve must be bounded above and below by the graphs of two functions
           of <em>x</em>. Any indentations that violate this will be ignored.</li>
-        <li>Size doesn't matter — shapes are scaled automatically to match.</li>
+        <li>Size doesn't matter. The shapes are scaled automatically to match.</li>
       </ul>
-      <p>Any vector drawing program works, or a graphing tool like <a href="https://www.geogebra.org/">GeoGebra</a>
-        if you'd rather define it mathematically — just export as <code>.svg</code>.</p>
+      <p>Use any vector drawing program or a graphing tool like <a href="https://www.geogebra.org/">GeoGebra</a>
+        if you'd rather define the curve mathematically. Export the file as an <code>.svg</code>.</p>
     </div>
 
-    <h2><span class="step-no">3</span>Export to OpenSCAD</h2>
+    <h2><span class="step-no">2</span>Export to OpenSCAD</h2>
     <div class="card">
       <p>Click <strong>Export the File</strong> to download a self-contained <code>.scad</code> file with your
-        dimensions prepopulated. Parameters can still be edited afterward, either in the file or via OpenSCAD's
+        dimensions prepopulated. Parameters can still be edited afterward, either in the <code>.scad</code> file or via OpenSCAD's
         Customizer panel (Window &rarr; Customizer).</p>
-      <p>The optional legs are worth including — they let the model stand upright at the proper viewing angle. Two
+      <p>The optional legs are worth including—they let the model stand upright at the proper viewing angle. Two
         feet are round and one is a fish eye; the fish-eye foot should point directly toward or away from the
         viewer.</p>
     </div>
 
-    <h2><span class="step-no">4</span>Render and export an STL</h2>
+    <h2><span class="step-no">3</span>Render and export an STL</h2>
     <div class="card">
       <p>If you don't already have OpenSCAD, the free, open-source program that turns the <code>.scad</code> file
         into a solid 3D model, install it from
@@ -235,31 +225,33 @@
       </ol>
     </div>
 
-    <h2><span class="step-no">5</span>Print it</h2>
+    <h2><span class="step-no">4</span>Print it</h2>
     <div class="card">
-      <p>Send the <code>.stl</code> to your slicer (PrusaSlicer, Bambu Studio, Cura, etc.) and print as usual.</p>
+      <p>Send the <code>.stl</code> to your slicer, and print as usual.</p>
       <p><strong>Printing advice</strong></p>
       <ul>
-        <li>These shapes touch the build plate at only a few small points, legs or not — supports are essential.</li>
+        <li>These shapes touch the build plate at only a few small points—supports are essential.</li>
         <li>A brim helps keep the object anchored to the plate.</li>
-        <li>Slowing the print speed can improve adhesion and reduce the chance of shifting or failure.</li>
+        <li>Slowing the print speed can improve adhesion and reduce the chance of failure.</li>
       </ul>
     </div>
 
-    <h2><span class="step-no">6</span>Viewing the object</h2>
+    <h2><span class="step-no">5</span>Viewing the object</h2>
     <div class="card">
-      <p>A few ways to see both silhouettes:</p>
+        <p>Place the object on a flat surface with the fish eye leg pointing toward you or away from you.</p>
+        <p>The effect assumes that the viewer is "at infinity." From a practical standpoint, this means that the viewer is not too close to the object. Also, this means that smaller versions of the object may work better than larger ones.</p>
+        <p>Ways to view the illusion:</p>
       <ul>
-        <li>Look down on the object from about 45&deg; to see the front-view silhouette; view from the opposite side
-          at the same angle for the back-view silhouette.</li>
-        <li>Prop a mirror behind it — the reflection shows the back-side view. Tip the mirror a few degrees toward
+        <li>Look down on the object from 45&deg; to see the effect. Turn it around to see the effect from the back.</li>
+        <li>Prop a mirror behind it—the reflection shows the back-side view. Tip the mirror a few degrees toward
           you (about 87&deg; rather than a full 90&deg;) for the best effect.</li>
-        <li>Shine a light down on it from behind at 45&deg; to cast the "opposite shadow" — a shadow in the shape of
-          the back-view silhouette.</li>
+        <li>Shine a light down on it from behind at 45&deg; to cast the "opposite shadow"—a shadow in the shape of the back-view silhouette.</li>
+        <li>Place a mirror flat on a surface. Set the object on the mirror. View from a 45&deg; angle.</li>
       </ul>
       <p>
         <img src="photos/mirror.jpeg" alt="Printed impossible object viewed directly next to its reflection in a tipped mirror, showing both silhouettes at once" style="width:100%; border-radius:6px; margin-bottom:10px;">
         <img src="photos/shadow.jpeg" alt="Printed impossible object with a light shone from behind at 45 degrees, casting the opposite silhouette as a shadow" style="width:100%; border-radius:6px;">
+        <img src="photos/mirrorOnTable.jpeg" alt="Printed impossible object set on a mirror and viewed from a 45 degree angle" style="width:100%; border-radius:6px;">
       </p>
     </div>
 
