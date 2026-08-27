@@ -830,7 +830,7 @@
         <label class="field"><span>Wall thickness (mm)</span><input type="number" id="scadWallThickness" step="0.1"
             min="1" max="10"></label>
         <label class="field row"><input type="checkbox" id="scadAddLegs" checked><span>Add three legs</span></label>
-        <label class="field"><span>Leg width along curve (mm)</span><input type="number" id="scadLegWidth" step="0.5"
+        <label class="field"><span>Leg width (mm)</span><input type="number" id="scadLegWidth" step="0.5"
             min="0.5"></label>
         <label class="field"><span>Leg extension length (mm)</span><input type="number" id="scadLegExtension" step="0.5"
             min="0"></label>
@@ -1069,15 +1069,42 @@ function walk_curve(points, i, from_t, remaining, N, guard = 0) =
         [points[j] + (from_t + (seg > 0 ? remaining / seg : 0)) * (points[k] - points[j])] :
         concat([points[k]], walk_curve(points, j + 1, 0, remaining - avail, N, guard + 1));
 
+// Mirror of walk_curve that walks backward: starts from_t fraction into
+// segment i (same convention as walk_curve - segment i runs points[j] to
+// points[j+1] where j = i mod N, measured from points[j] toward
+// points[j+1]) and heads back toward points[j], then segment i-1, etc.
+// Used for the half of the leg span behind the crossing point.
+function walk_curve_back(points, i, from_t, remaining, N, guard = 0) =
+    remaining <= 1e-9 || guard > N ? [] :
+    let (
+        j = ((i % N) + N) % N,
+        k = (j + 1) % N,
+        seg = norm(points[k] - points[j]),
+        avail = from_t * seg
+    )
+    avail >= remaining ?
+        [points[j] + (from_t - (seg > 0 ? remaining / seg : 0)) * (points[k] - points[j])] :
+        concat([points[j]], walk_curve_back(points, j - 1, 1, remaining - avail, N, guard + 1));
+
 // Ordered points spanning leg_width along the curve, centered on the
 // crossing at segment i / fraction t: half_width back, the crossing point
 // itself, then half_width forward.
 function leg_span_points(points, i, t, half_width) =
     let (
         N = len(points) - 1,
+        j = i % N,
+        k = (j + 1) % N,
+        seg = norm(points[k] - points[j]),
+        // Arc length from the crossing point to points[k] (the first whole
+        // point on the forward side) - already "spent" before the forward
+        // walk's budget of half_width even starts, so it must come out of
+        // that budget rather than being walked in addition to it.
+        to_next_whole_point = (1 - t) * seg,
         center = hit_point(points, i, t),
-        back = walk_curve(points, i, 1 - t, half_width, N),
-        fwd = walk_curve(points, i + 1, 0, half_width, N)
+        back = walk_curve_back(points, i, t, half_width, N),
+        fwd = to_next_whole_point >= half_width
+            ? [center + (half_width / seg) * (points[k] - points[j])]
+            : concat([points[k]], walk_curve(points, j + 1, 0, half_width - to_next_whole_point, N))
     )
     concat([for (idx = [len(back) - 1 : -1 : 0]) back[idx]], [center], fwd);
 
@@ -1128,12 +1155,26 @@ module legs_for_curve(points) {
     cx = (min(xs) + max(xs)) / 2;
     cy = (min(ys) + max(ys)) / 2;
     leg_bottom = floor_z - leg_extension;
+    // Half-thickness ball on each leg column bottoms out below leg_bottom
+    // by wall_thickness / 2, which would poke past the feet's flat bottom
+    // face; clipping the legs to z >= leg_bottom keeps everything flush.
+    clip_span = overall_width * 4;
+    // The balls swept along the curve (radius wall_thickness / 2) already
+    // extend that far past each end of the arc-length span walked below, so
+    // the true visible width is leg_width_along_curve + wall_thickness.
+    // Subtracting wall_thickness here first is what makes leg_width mean
+    // that true, measurable width rather than just the walked span.
+    leg_width_along_curve = max(leg_width - wall_thickness, 0);
     for (a = [90, 210, 330]) {
         seg = ray_hit_seg(points, cx, cy, a);
         p = hit_point(points, seg[0], seg[1]);
-        span = leg_span_points(points, seg[0], seg[1], leg_width / 2);
+        span = leg_span_points(points, seg[0], seg[1], leg_width_along_curve / 2);
 
-        leg_ribbon_chain(span, leg_bottom);
+        intersection() {
+            leg_ribbon_chain(span, leg_bottom);
+            translate([p[0] - clip_span / 2, p[1] - clip_span / 2, leg_bottom])
+                cube([clip_span, clip_span, clip_span]);
+        }
 
         // Feet, flush with the leg bottoms: an almond pointing +y on the
         // 90-degree leg (the orientation marker), round feet on the others.
@@ -1175,7 +1216,7 @@ ribbon_height = max(overall_height - wall_thickness, 0);
 
 /* [Legs] */
 add_legs = ${params.addLegs};       // add three support legs at 120-degree spacing
-leg_width = ${params.legWidth};        // how far (mm) each leg spans along the curve, centered on the leg's position (half each direction)
+leg_width = ${params.legWidth};        // true width (mm) of each leg where it meets the object, centered on the leg's position (half each direction) - includes the wall_thickness added by the rounded ends, so this is the actual measurable width, not just the arc walked along the curve
 leg_extension = ${params.legExtension};      // how far (mm) the legs extend below the lowest point of the figure
 
 /* [Feet] */
@@ -1201,7 +1242,7 @@ ${SCAD_MODULES}`
     }
     function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name($('frontName').textContent)}-${name($('backName').textContent)}.scad` }
     function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegWidth', 'scadLegExtension', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on }
-    function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } $('scadOverallWidth').value = Number($('widthSlider').value); $('scadRibbonThickness').value = Number($('heightSlider').value); $('scadWallThickness').value = Number($('thicknessSlider').value); $('scadAddLegs').checked = true; $('scadLegWidth').value = 6; $('scadLegExtension').value = 5; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
+    function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } $('scadOverallWidth').value = Number($('widthSlider').value); $('scadRibbonThickness').value = Number($('heightSlider').value); $('scadWallThickness').value = Number($('thicknessSlider').value); $('scadAddLegs').checked = true; $('scadLegWidth').value = 4; $('scadLegExtension').value = 5; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
     function closeExportModal() { $('exportModal').hidden = true }
     function openInstructionsModal() { $('instructionsModal').hidden = false }
     function closeInstructionsModal() { $('instructionsModal').hidden = true }
