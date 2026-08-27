@@ -188,13 +188,13 @@
 
     <h2 id="svg-shape"><span class="step-no">1</span>Design your impossible object</h2>
     <div class="card">
-      <p>Open the <a href="index.html">designer</a> and choose a front- and a back-view shapes from the
-        dropdowns. </p>
-      <p>To use your own shape instead of a built-in one, upload an <code>.svg</code> for either view. Your curve
-        must have a few specific properties.</p>
+      <p>Open the <a href="index.html">designer</a> and choose front and a back shapes from the
+        dropdown menus. </p>
+      <p>To use your own shape, upload an <code>.svg</code> file. Your curve
+        must have the following properties.</p>
       <ul>
-        <li>It must be a single closed curve, like the sample shapes in the designer.</li>
-        <li>Every vertical line must cross it at exactly one or two points—no horizontal indentations. Equivalently, the curve must be bounded above and below by the graphs of two functions
+        <li>It must be a single closed curve, like the sample shapes.</li>
+        <li>Every vertical line must cross the curve at exactly one or two points—no indentations from the sides. In mathematical terms, the curve must be bounded above and below by the graphs of two functions
           of <em>x</em>. Any indentations that violate this will be ignored.</li>
         <li>Size doesn't matter. The shapes are scaled automatically to match.</li>
       </ul>
@@ -204,22 +204,20 @@
 
     <h2><span class="step-no">2</span>Export to OpenSCAD</h2>
     <div class="card">
-      <p>Click <strong>Export the File</strong> to download a self-contained <code>.scad</code> file with your
-        dimensions prepopulated. Parameters can still be edited afterward, either in the <code>.scad</code> file or via OpenSCAD's
-        Customizer panel (Window &rarr; Customizer).</p>
-      <p>The optional legs are worth including—they let the model stand upright at the proper viewing angle. Two
+      <p>Click <strong>Export the File</strong> to download a self-contained <code>.scad</code> file. The pop-up window opens prepopulated with your chosen dimensions. They can be modified here or later in OpenSCAD. </p>
+      <p>The optional legs let the model stand upright at the proper viewing angle. Also, two of the
         feet are round and one is a fish eye; the fish-eye foot should point directly toward or away from the
         viewer.</p>
     </div>
 
     <h2><span class="step-no">3</span>Render and export an STL</h2>
     <div class="card">
-      <p>If you don't already have OpenSCAD, the free, open-source program that turns the <code>.scad</code> file
-        into a solid 3D model, install it from
-        <a class="btn primary" href="https://openscad.org/downloads.html">openscad.org/downloads.html</a>.</p>
+      <p>If you don't have OpenSCAD, download the free, open-source program from
+        <a href="https://openscad.org/downloads.html">openscad.org/downloads.html</a>.</p>
       <ol>
         <li>Open the <code>.scad</code> file in OpenSCAD.</li>
         <li><strong>Design &rarr; Preview</strong> to preview the model.</li>
+        <li>Fine tune the parameters in the editor window or via the Customizer panel (Window &rarr; Customizer).</li>
         <li><strong>Design &rarr; Render</strong> for a full-resolution render.</li>
         <li><strong>File &rarr; Export &rarr; Export as STL</strong> to save the <code>.stl</code> file.</li>
       </ol>
@@ -230,7 +228,7 @@
       <p>Send the <code>.stl</code> to your slicer, and print as usual.</p>
       <p><strong>Printing advice</strong></p>
       <ul>
-        <li>These shapes touch the build plate at only a few small points—supports are essential.</li>
+        <li>These shapes touch the build plate at only a few small points and most of the shape is unsupported, so adding temporary printing support is essential.</li>
         <li>A brim helps keep the object anchored to the plate.</li>
         <li>Slowing the print speed can improve adhesion and reduce the chance of failure.</li>
       </ul>
@@ -239,10 +237,10 @@
     <h2><span class="step-no">5</span>Viewing the object</h2>
     <div class="card">
         <p>Place the object on a flat surface with the fish eye leg pointing toward you or away from you.</p>
-        <p>The effect assumes that the viewer is "at infinity." From a practical standpoint, this means that the viewer is not too close to the object. Also, this means that smaller versions of the object may work better than larger ones.</p>
+        <p>The effect assumes that the viewer is "at infinity." From a practical standpoint, this means that the viewer should not be too close to the object. Also, this means that smaller versions of the object may work better than larger ones.</p>
         <p>Ways to view the illusion:</p>
       <ul>
-        <li>Look down on the object from 45&deg; to see the effect. Turn it around to see the effect from the back.</li>
+        <li>Look down on the object from 45&deg; to see the effect. Turn it around to see the effect from the other side.</li>
         <li>Prop a mirror behind it—the reflection shows the back-side view. Tip the mirror a few degrees toward
           you (about 87&deg; rather than a full 90&deg;) for the best effect.</li>
         <li>Shine a light down on it from behind at 45&deg; to cast the "opposite shadow"—a shadow in the shape of the back-view silhouette.</li>
