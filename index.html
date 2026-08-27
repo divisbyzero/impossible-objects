@@ -888,7 +888,15 @@
     function shapePoint(el, len) { const p = el.getPointAtLength(len), m = el.getCTM(); if (!m) return p; return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f } }
     function svgIntrinsicBox(root) { const vb = root.getAttribute('viewBox'); if (vb) return vb; const w = parseFloat(root.getAttribute('width')) || 100, h = parseFloat(root.getAttribute('height')) || 100; return `0 0 ${w} ${h}` }
     function isBackgroundRect(el, vw, vh) { if (el.tagName.toLowerCase() !== 'rect') return false; const x = parseFloat(el.getAttribute('x')) || 0, y = parseFloat(el.getAttribute('y')) || 0, w = parseFloat(el.getAttribute('width')) || 0, h = parseFloat(el.getAttribute('height')) || 0; return x <= vw * .01 && y <= vh * .01 && w >= vw * .98 && h >= vh * .98 }
-    function visibleCandidates(root, viewBox) { const [, , vw, vh] = viewBox.split(/\s+/).map(Number); return Array.from(root.querySelectorAll(SHAPE_SELECTOR)).filter(el => !el.closest('defs, clipPath, symbol, mask, pattern') && !isBackgroundRect(el, vw, vh)) }
+    // Desmos wraps its background rect and grid/axis chrome in groups it always ids
+    // "background-<hash>" and "graphpaper-<hash>"; excluding by that prefix (rather
+    // than isBackgroundRect's raw-attribute size check) is what catches the background
+    // rect even though Desmos draws it at half scale inside a <g transform="scale(2,2)">.
+    function isDesmosChrome(el) { return !!el.closest('[id^="background-"], [id^="graphpaper-"]') }
+    // Desmos also emits empty fill/tickmark paths (d="") as placeholders alongside the
+    // real curve paths; getPointAtLength() throws on these, so they must never be picked.
+    function isEmptyPath(el) { return el.tagName.toLowerCase() === 'path' && !(el.getAttribute('d') || '').trim() }
+    function visibleCandidates(root, viewBox) { const [, , vw, vh] = viewBox.split(/\s+/).map(Number); return Array.from(root.querySelectorAll(SHAPE_SELECTOR)).filter(el => !el.closest('defs, clipPath, symbol, mask, pattern') && !isBackgroundRect(el, vw, vh) && !isDesmosChrome(el) && !isEmptyPath(el)) }
     function sampleSegmentPoints(el, count = 400) { const total = el.getTotalLength(), pts = []; for (let i = 0; i <= count; i++) { const p = shapePoint(el, total * i / count); pts.push([p.x, p.y]) } return pts }
     function stitchSegments(segments) { const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]), eps = 1e-6, used = segments.map(() => false); let chain = segments[0].slice(); used[0] = true; for (let remaining = segments.length - 1; remaining > 0; remaining--) { const tail = chain[chain.length - 1]; let best = -1, bestFlip = false, bestDist = Infinity; for (let i = 0; i < segments.length; i++) { if (used[i]) continue; const seg = segments[i], dStart = dist(tail, seg[0]), dEnd = dist(tail, seg[seg.length - 1]); if (dStart < bestDist) { bestDist = dStart; best = i; bestFlip = false } if (dEnd < bestDist) { bestDist = dEnd; best = i; bestFlip = true } } const pts = bestFlip ? segments[best].slice().reverse() : segments[best]; for (const p of pts) if (dist(chain[chain.length - 1], p) > eps) chain.push(p); used[best] = true } return chain }
     function buildClosedPathD(points) { return 'M ' + points.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(' L ') + ' Z' }
@@ -902,8 +910,9 @@
       const viewBox = svgIntrinsicBox(doc.documentElement);
       // Render into a live, attached SVG (matching the source's own nesting/transforms) so
       // getCTM()/getTotalLength() resolve correctly, then look for the actual curve(s) -
-      // ignoring <defs>/<clipPath> content and the full-canvas background rect that
-      // GeoGebra (and similar tools) always include in their SVG export.
+      // ignoring <defs>/<clipPath> content, the full-canvas background rect and empty
+      // placeholder paths, and Desmos's background/graphpaper chrome, all of which
+      // GeoGebra, Desmos, and similar tools include in their SVG export.
       const ns = 'http://www.w3.org/2000/svg', measure = document.createElementNS(ns, 'svg');
       measure.setAttribute('viewBox', viewBox);
       measure.style.position = 'absolute';
@@ -967,10 +976,8 @@
     function normalizedThicknessRadius() { return state.thicknessMM / 2 / state.widthMM * CURVE_SAMPLE_SPAN }
     function vSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]] }
     function vCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]] }
-    function vDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] }
     function vAddScaled(a, b, s) { return [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s] }
     function vNormalize(a) { const len = Math.hypot(...a) || 1; return [a[0] / len, a[1] / len, a[2] / len] }
-    function unitNormal(a, b, c) { return vNormalize(vCross(vSub(b, a), vSub(c, a))) }
     const ARC_STEPS = 8;
     const AXIS_LENGTH = 0.5;
     function rebuildGeometry() {
@@ -981,14 +988,23 @@
       const M = state.mesh.length / 3 - 1;
       const top = i => { const idx = ((i % M) + M) % M, a = idx * 3; return [state.mesh[a], state.mesh[a + 1], state.mesh[a + 2]] };
       const bottom = i => { const t = top(i); return [t[0], t[1], t[2] - renderHeight] };
-      // Per rail point, build a local frame (tangent / in-plane normal / outward "vertical" axis) so the
-      // ribbon's cross-section can be a semicircle-capped stadium - matching the OpenSCAD export, which
-      // is a hull of same-radius spheres at each top/bottom rail point rather than a sharp-edged box.
+      // Per rail point, build a local frame (tangent / horizontal "width" axis / vertical
+      // "thickness" axis) so the ribbon's cross-section can be a semicircle-capped stadium -
+      // matching the OpenSCAD export, which is a hull of same-radius spheres at each top/bottom
+      // rail point rather than a sharp-edged box. bottom(i) is always exactly top(i) shifted
+      // down in world z, so the thickness axis u is always [0,0,1] - fixed, not derived from a
+      // 3-point plane normal recomputed at each i - which is what previously made the frame
+      // twist at sharp corners, where that per-point plane becomes near-degenerate.
+      const UP = [0, 0, 1];
       const topArcs = [], bottomArcs = [];
       for (let i = 0; i <= M; i++) {
-        const t = vNormalize(vSub(top(i + 1), top(i - 1))), n0 = unitNormal(top(i), top(i + 1), bottom(i)),
-          n = vNormalize(vAddScaled(n0, t, -vDot(n0, t))), u0 = vNormalize(vCross(t, n)),
-          u = vDot(u0, vSub(top(i), bottom(i))) < 0 ? u0.map(x => -x) : u0,
+        const t = vNormalize(vSub(top(i + 1), top(i - 1))),
+          nRaw = vCross(t, UP), nLen = Math.hypot(...nRaw),
+          // t exactly vertical is a degenerate cross product; fall back to a fixed horizontal
+          // axis rather than leaving n undefined (this only matters for a curve segment that
+          // moves straight up/down, which these SVG-derived profiles never actually do).
+          n = nLen > 1e-9 ? nRaw.map(x => x / nLen) : [1, 0, 0],
+          u = UP,
           topArc = [], bottomArc = [], topCenter = top(i), bottomCenter = bottom(i);
         for (let k = 0; k <= ARC_STEPS; k++) {
           const theta = Math.PI * k / ARC_STEPS, c = Math.cos(theta), s = Math.sin(theta);
