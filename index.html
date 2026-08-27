@@ -577,7 +577,7 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 9px;
       padding: 8px 10px;
       background: rgba(7, 17, 20, .88);
@@ -1165,6 +1165,7 @@ foot_width = ${params.footWidth};         // width/diameter of each foot (mm) - 
 
 // ===== CURVE (dimensionless, baked from the web app preview) =====
 
+/* [Hidden] */
 curve_points = [
 ${scadCurvePoints(state.mesh)}
 ];
@@ -1172,7 +1173,7 @@ ${scadCurvePoints(state.mesh)}
 // The web app always samples the curve across a fixed dimensionless x-span
 // of 0.65 (-0.325 to 0.325), regardless of the curve's actual shape, so
 // dividing that back out here is what makes overall_width equal the
-// object's real bounding-box width in mm.
+// object's real bounding-box width in mm. Not user-adjustable.
 curve_sample_span = 0.65;
 curve_points_mm = [
     for (p = curve_points) [ for (v = p) v * overall_width / curve_sample_span ]
