@@ -1,0 +1,51 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "$fn": "64",
+            "arm_width": "13",
+            "base_center_diameter": "12",
+            "base_center_extra": "1",
+            "base_height": "3",
+            "base_top_extra": "6.5",
+            "base_top_radius": "4",
+            "box_height": "8",
+            "foot_diameter_others": "7",
+            "foot_height": "2",
+            "foot_width_90": "7",
+            "groove_clearance": "0.5",
+            "hub_diameter": "30",
+            "insert_clearance": "0.20000000000000001",
+            "insert_diameter": "22",
+            "insert_pocket_depth": "4",
+            "leg_diameter": "3",
+            "object_width": "110",
+            "plate_color": "DeepSkyBlue",
+            "show_spinner": "false",
+            "show_top_groove": "true"
+        },
+        "New set 2": {
+            "$fn": "64",
+            "arm_width": "13",
+            "base_center_diameter": "10",
+            "base_center_extra": "1",
+            "base_height": "3",
+            "base_top_extra": "6.5",
+            "base_top_radius": "3.8999999999999999",
+            "box_height": "8",
+            "foot_diameter_others": "7",
+            "foot_height": "2",
+            "foot_width_90": "7",
+            "groove_clearance": "0.5",
+            "hub_diameter": "30",
+            "insert_clearance": "0.20000000000000001",
+            "insert_diameter": "22",
+            "insert_pocket_depth": "4",
+            "leg_diameter": "3",
+            "object_width": "130",
+            "plate_color": "DeepSkyBlue",
+            "show_spinner": "true",
+            "show_top_groove": "true"
+        }
+    }
+}
