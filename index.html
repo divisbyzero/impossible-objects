@@ -449,6 +449,10 @@
       cursor: grabbing
     }
 
+    .scene-canvas.mirrored {
+      transform: scaleX(-1)
+    }
+
     .hud {
       position: absolute;
       inset: 14px 16px auto;
@@ -498,6 +502,36 @@
       border: 1px solid #35545a;
       border-radius: 4px;
       background: rgba(12, 31, 36, .85)
+    }
+
+    .view-toggle {
+      display: flex;
+      border: 1px solid #35545a;
+      border-radius: 4px;
+      overflow: hidden
+    }
+
+    .view-toggle button {
+      color: var(--ink);
+      background: #0b181b;
+      border: none;
+      padding: 7px 12px;
+      font: 12px ui-sans-serif, system-ui, sans-serif;
+      cursor: pointer
+    }
+
+    .view-toggle button+button {
+      border-left: 1px solid #35545a
+    }
+
+    .view-toggle button:hover {
+      color: var(--accent)
+    }
+
+    .view-toggle button.active {
+      background: var(--accent);
+      color: #06211d;
+      font-weight: 600
     }
 
     .range-control label,
@@ -658,13 +692,17 @@
         <div class="stage" id="stageBack">
           <canvas id="sceneBack" class="scene-canvas"
             aria-label="Interactive 3D impossible object preview, back view"></canvas>
-          <div class="legend">Drag horizontally to orbit · wheel or pinch to zoom</div>
+          <div class="legend" id="legendBack">Drag horizontally to orbit · wheel or pinch to zoom</div>
         </div>
         <div class="stage" id="stageFront">
           <canvas id="sceneFront" class="scene-canvas"
             aria-label="Interactive 3D impossible object preview, front view"></canvas>
         </div>
         <div class="scene-controls">
+          <div class="view-toggle" role="group" aria-label="3D view mode">
+            <button type="button" id="freeViewBtn" class="active" aria-pressed="true">Front/Rear view</button>
+            <button type="button" id="mirrorViewBtn" aria-pressed="false">Front/Mirror view</button>
+          </div>
           <div class="range-control"><label for="sampleSlider">Sample Points</label><input id="sampleSlider" type="range"
               min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output id="sampleValue">248</output>
           </div>
@@ -721,7 +759,7 @@
     // widthMM/heightMM/thicknessMM are the real-world (mm) values the user sets; the 3D
     // preview stays in the app's normalized coordinate space, so heightMM is converted via
     // normalizedHeight() using the same curve_sample_span ratio the OpenSCAD export uses.
-    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], widthMM: 80, heightMM: 7, thicknessMM: 3, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false }, back: { flipH: false, flipV: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, drag: null };
+    const state = { front: null, back: null, mesh: null, axisOrigin: [0, 0, 0], widthMM: 80, heightMM: 7, thicknessMM: 3, samples: 248, loadToken: { front: 0, back: 0 }, transform: { front: { flipH: false, flipV: false }, back: { flipH: false, flipV: false } }, camera: { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 }, viewMode: 'free', drag: null };
     const CURVE_SAMPLE_SPAN = 0.65;
     const REFERENCE_WIDTH_MM = 90;
     // The rounded caps add wall_thickness of extra extent on top of the top-to-bottom rail
@@ -1033,13 +1071,29 @@ ${SCAD_MODULES}`
     function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } $('scadOverallWidth').value = Number($('widthSlider').value); $('scadRibbonThickness').value = Number($('heightSlider').value); $('scadWallThickness').value = Number($('thicknessSlider').value); $('scadAddLegs').checked = true; $('scadLegDiameter').value = 3; $('scadLegExtension').value = 5; $('scadLegFlare').value = 2; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
     function closeExportModal() { $('exportModal').hidden = true }
     function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legExtension: +$('scadLegExtension').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
-    function camPos(azimuth) { const e = state.camera.elevation, d = state.camera.distance; return new THREE.Vector3(d * Math.cos(e) * Math.sin(azimuth), d * Math.cos(e) * Math.cos(azimuth), d * Math.sin(e)) }
-    function updateCamera() { if (!state.axisOrigin || !rendererFront) return; const target = new THREE.Vector3(...state.axisOrigin).multiplyScalar(state.widthMM / REFERENCE_WIDTH_MM); cameraFront.position.copy(target).add(camPos(state.camera.azimuth)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix(); cameraBack.position.copy(target).add(camPos(state.camera.azimuth + Math.PI)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix(); rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack) }
+    function camPos(azimuth, elevation, distance) { return new THREE.Vector3(distance * Math.cos(elevation) * Math.sin(azimuth), distance * Math.cos(elevation) * Math.cos(azimuth), distance * Math.sin(elevation)) }
+    function updateCamera() {
+      if (!state.axisOrigin || !rendererFront) return;
+      const target = new THREE.Vector3(...state.axisOrigin).multiplyScalar(state.widthMM / REFERENCE_WIDTH_MM);
+      const { azimuth, elevation, distance } = state.camera;
+      cameraFront.position.copy(target).add(camPos(azimuth, elevation, distance)); cameraFront.lookAt(target); cameraFront.zoom = state.camera.zoom; cameraFront.updateProjectionMatrix();
+      cameraBack.position.copy(target).add(camPos(azimuth + Math.PI, elevation, distance)); cameraBack.lookAt(target); cameraBack.zoom = state.camera.zoom; cameraBack.updateProjectionMatrix();
+      rendererFront.render(world, cameraFront); rendererBack.render(world, cameraBack)
+    }
     function resizeOne(cam, canvasEl, renderer) { const r = canvasEl.getBoundingClientRect(), aspect = (r.width / r.height) || 1; cam.left = -aspect * 1.05; cam.right = aspect * 1.05; cam.top = 1.05; cam.bottom = -1.05; cam.updateProjectionMatrix(); renderer.setSize(r.width, r.height, false) }
     function resize() { if (!rendererFront) return; resizeOne(cameraFront, sceneFront, rendererFront); resizeOne(cameraBack, sceneBack, rendererBack); updateCamera() }
     function render() { updateCamera(); requestAnimationFrame(render) }
     function wireOrbit(canvasEl) { canvasEl.onpointerdown = e => { canvasEl.setPointerCapture(e.pointerId); canvasEl.classList.add('dragging'); state.drag = { x: e.clientX } }; canvasEl.onpointermove = e => { if (!state.drag) return; state.camera.azimuth += (e.clientX - state.drag.x) * .012; state.drag.x = e.clientX }; canvasEl.onpointerup = canvasEl.onpointercancel = () => { state.drag = null; canvasEl.classList.remove('dragging') }; canvasEl.onwheel = e => { e.preventDefault(); state.camera.zoom = Math.max(.3, Math.min(8, state.camera.zoom * Math.exp(-e.deltaY * .001))) } }
-    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup, axisGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function setViewMode(mode) {
+      state.viewMode = mode; state.drag = null;
+      const mirrorMode = mode === 'mirror';
+      $('freeViewBtn').classList.toggle('active', !mirrorMode); $('freeViewBtn').setAttribute('aria-pressed', String(!mirrorMode));
+      $('mirrorViewBtn').classList.toggle('active', mirrorMode); $('mirrorViewBtn').setAttribute('aria-pressed', String(mirrorMode));
+      sceneFront.classList.remove('dragging'); sceneBack.classList.remove('dragging');
+      sceneBack.classList.toggle('mirrored', mirrorMode);
+      $('legendBack').textContent = mirrorMode ? 'Drag horizontally to orbit (mirror) · wheel or pinch to zoom' : 'Drag horizontally to orbit · wheel or pinch to zoom';
+    }
+    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0x081417, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup, axisGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('exportModal').hidden) closeExportModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
