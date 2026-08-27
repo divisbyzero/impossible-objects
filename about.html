@@ -191,27 +191,47 @@
     <h2><span class="step-no">1</span>Design your impossible object in the browser</h2>
     <div class="card">
       <p>Open the <a href="index.html">Designer</a>. Choose a shape for the front view and a shape for the back view
-        from the dropdown lists or upload your own <code>.svg</code> files. (See below for recommendations on how to design your own shapes). The 3D preview updates live so you can see the
-        object from both angles before committing to anything.</p>
-      <p>Adjust the width, height, and wall thickness sliders until you're happy with the proportions.</p>
+        from the dropdown lists or upload your own <code>.svg</code> files. (See (2) for recommendations on designing your own shapes). The 3D preview updates live so you can see the
+        object from both angles and can rotate the object before committing to the final design.</p>
+      <p>Adjust the orientation, width, height, and wall thickness sliders until you're happy with the design.</p>
     </div>
 
-    <h2><span class="step-no">2</span>Export to OpenSCAD</h2>
+    <h2><span class="step-no">2</span>Design your own <code>.svg</code> shape (optional)</h2>
     <div class="card">
-      <p>Click <strong>Export to OpenSCAD</strong>. This downloads a self-contained <code>.scad</code> file with your
-        chosen dimensions prepopulated, including optional legs so the model can stand upright.</p>
+      <p>If the built-in shapes don't include what you're looking for, you can upload your own <code>.svg</code> file for
+        the front view, the back view, or both. The curve just needs to follow a few rules so the algorithm can
+        make sense of it.</p>
+      <ul>
+        <li>It must be a single closed curve, like the sample shapes shown in the Designer.</li>
+        <li>Every vertical line must cross the curve at exactly one or two points. The curve doesn't have to be
+          convex, but it can't have any horizontal indentations—no shape where a vertical line would pass in and
+          out of the curve more than twice. Any such indentations will be ignored.</li>
+        <li>Put another way: if the curve sat in the <em>xy</em>-plane, it would need to be bounded above and below by the
+          graphs of two functions of <em>x</em>.</li>
+          <li>The shape can be any size in the <code>.svg</code> files. If the two shapes are different sizes, they are automatically scaled to be the same width.</li>
+      </ul>
+      <p> You can create <code>.svg</code> files in most vector drawing programs. If you prefer a more mathematical approach, you can also use a graphing program like <a href="https://www.geogebra.org/">GeoGebra</a>, then export it as an <code>.svg</code>.</p>
+    </div>
+
+    <h2><span class="step-no">3</span>Export to OpenSCAD</h2>
+    <div class="card">
+      <p>Click <strong>Export the File</strong>. This downloads a self-contained <code>.scad</code> file with your
+        chosen dimensions prepopulated.</p>
       <p>The parameters in the exported file are editable afterward, either by editing the numbers at the top of
         the file or using OpenSCAD's built-in Customizer panel (Window &rarr; Customizer).</p>
+      <p>The optional legs are worth including. They are designed so the model can stand upright for the proper
+        viewing angle. Two feet are round and one is shaped like a fish eye. This fish eye foot should point
+        directly toward or directly away from the viewer.</p>
     </div>
 
-    <h2><span class="step-no">3</span>Install OpenSCAD</h2>
+    <h2><span class="step-no">4</span>Install OpenSCAD</h2>
     <div class="card">
       <p>OpenSCAD is the free, open-source program that turns the exported <code>.scad</code> file into a solid 3D
         model. Download it for Windows, macOS, or Linux here.</p>
       <p><a class="btn primary" href="https://openscad.org/downloads.html">openscad.org/downloads.html</a></p>
     </div>
 
-    <h2><span class="step-no">4</span>Render and export an STL</h2>
+    <h2><span class="step-no">5</span>Render and export an STL</h2>
     <div class="card">
       <ol>
         <li>Open the <code>.scad</code> file in OpenSCAD.</li>
@@ -221,11 +241,35 @@
       </ol>
     </div>
 
-    <h2><span class="step-no">5</span>Print it</h2>
+    <h2><span class="step-no">6</span>Print it</h2>
     <div class="card">
       <p>Send the <code>.stl</code> file to your slicer (e.g. PrusaSlicer, Bambu Studio, Cura) as you would any other
-        model, then print. No special settings are usually required — standard supports may help for the overhanging
-        curves depending on your printer and chosen shapes.</p>
+        model. Then print. </p>
+      <p><strong>Printing advice</strong></p>
+      <ul>
+        <li>Whether or not your model has the optional legs described in step 2, these shapes tend to touch the build plate at only a few small points. It's
+          essential to print with supports.</li>
+        <li>Adding a brim in your slicer can help keep the object anchored to the build plate.</li>
+        <li>Slowing down the print speed can improve adhesion and reduce the
+          chance of the model shifting or failing.</li>
+      </ul>
+    </div>
+
+    <h2><span class="step-no">7</span>Viewing the object</h2>
+    <div class="card">
+      <p>Once you have a printed (or rendered) model, here's how to see both silhouettes:</p>
+      <ul>
+        <li>Look down on the object from about a 45&deg; angle to see the front-view silhouette, and from the
+          opposite side at the same angle to see the back-view silhouette.</li>
+        <li>You can also view it with a mirror behind it — the reflection shows the back-side view. For the best
+          effect, tip the mirror a few degrees toward you (about 87&deg; from horizontal, rather than a full 90&deg;).</li>
+        <li>Shining a light down on the object from behind at a 45&deg; angle casts the "opposite shadow" — a shadow
+          in the shape of the back-view silhouette.</li>
+      </ul>
+      <p>
+        <img src="photos/mirror.jpeg" alt="Printed impossible object viewed directly next to its reflection in a tipped mirror, showing both silhouettes at once" style="width:100%; border-radius:6px; margin-bottom:10px;">
+        <img src="photos/shadow.jpeg" alt="Printed impossible object with a light shone from behind at 45 degrees, casting the opposite silhouette as a shadow" style="width:100%; border-radius:6px;">
+      </p>
     </div>
 
   </div>
