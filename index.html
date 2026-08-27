@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Impossible Cylinders</title>
+  <title>Impossible Objects</title>
   <style>
     :root {
       color-scheme: dark;
@@ -618,23 +618,6 @@
     </header>
     <main class="workspace" id="workspace">
       <section class="left" id="leftPane">
-        <article class="panel front">
-          <div class="panel-head"><strong>Front view</strong><span id="frontName">Arrow 3</span></div>
-          <div class="preview" id="frontPreview"></div>
-          <div class="controls">
-            <div class="select-hint">Select a shape</div>
-            <select id="frontSelect" aria-label="Front SVG"></select>
-            <div class="upload-hint"><span>or upload your own .svg</span><a class="help-link"
-                href="about.html#svg-shape" target="_blank" rel="noopener" aria-label="How to design your own .svg shape"
-                title="How to design your own .svg shape">?</a></div>
-            <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
-              aria-label="Upload front SVG">
-            <div class="transform-controls">
-              <label class="chk"><input type="checkbox" id="frontFlipV"> Flip Vertical</label>
-              <label class="chk"><input type="checkbox" id="frontFlipH"> Flip Horizontal</label>
-            </div>
-          </div>
-        </article>
         <article class="panel back">
           <div class="panel-head"><strong>Rear view</strong><span id="backName">Car</span></div>
           <div class="preview" id="backPreview"></div>
@@ -652,17 +635,34 @@
             </div>
           </div>
         </article>
+        <article class="panel front">
+          <div class="panel-head"><strong>Front view</strong><span id="frontName">Arrow 3</span></div>
+          <div class="preview" id="frontPreview"></div>
+          <div class="controls">
+            <div class="select-hint">Select a shape</div>
+            <select id="frontSelect" aria-label="Front SVG"></select>
+            <div class="upload-hint"><span>or upload your own .svg</span><a class="help-link"
+                href="about.html#svg-shape" target="_blank" rel="noopener" aria-label="How to design your own .svg shape"
+                title="How to design your own .svg shape">?</a></div>
+            <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
+              aria-label="Upload front SVG">
+            <div class="transform-controls">
+              <label class="chk"><input type="checkbox" id="frontFlipV"> Flip Vertical</label>
+              <label class="chk"><input type="checkbox" id="frontFlipH"> Flip Horizontal</label>
+            </div>
+          </div>
+        </article>
       </section>
       <div class="divider" id="divider" aria-label="Resize panels"></div>
       <section class="stages">
-        <div class="stage" id="stageFront">
-          <canvas id="sceneFront" class="scene-canvas"
-            aria-label="Interactive 3D impossible cylinder preview, front view"></canvas>
-          <div class="legend">Drag horizontally to orbit · wheel or pinch to zoom</div>
-        </div>
         <div class="stage" id="stageBack">
           <canvas id="sceneBack" class="scene-canvas"
-            aria-label="Interactive 3D impossible cylinder preview, back view"></canvas>
+            aria-label="Interactive 3D impossible object preview, back view"></canvas>
+          <div class="legend">Drag horizontally to orbit · wheel or pinch to zoom</div>
+        </div>
+        <div class="stage" id="stageFront">
+          <canvas id="sceneFront" class="scene-canvas"
+            aria-label="Interactive 3D impossible object preview, front view"></canvas>
         </div>
         <div class="scene-controls">
           <div class="range-control"><label for="sampleSlider">Sample Points</label><input id="sampleSlider" type="range"
@@ -985,8 +985,8 @@ if (add_legs) legs_for_curve(curve_points_mm);
 `;
     function scadCurvePoints(mesh) { const rows = []; for (let i = 0; i < mesh.length; i += 3) rows.push(`    [${mesh[i].toFixed(6)}, ${mesh[i + 1].toFixed(6)}, ${mesh[i + 2].toFixed(6)}]`); return rows.join(',\n') }
     function generateScad(params) {
-      return `// Impossible cylinder: ${$('frontName').textContent} (front) + ${$('backName').textContent} (back)
-// Exported from the Impossible Cylinders web app.
+      return `// Impossible object: ${$('frontName').textContent} (front) + ${$('backName').textContent} (back)
+// Exported from the Impossible Objects web app.
 // Tweak the parameters below directly, or via Window > Customizer in OpenSCAD.
 // Press F5 to preview, F6 to render, then export as STL for printing.
 
