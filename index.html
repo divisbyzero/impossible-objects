@@ -359,6 +359,42 @@
       max-width: none
     }
 
+    .select-hint {
+      flex-basis: 100%;
+      color: var(--muted);
+      font: 11px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .upload-hint {
+      display: flex;
+      flex-basis: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      color: var(--muted);
+      font: 11px ui-sans-serif, system-ui, sans-serif
+    }
+
+    .upload-hint .help-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border: 1px solid #35545a;
+      border-radius: 50%;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 10px;
+      line-height: 1;
+      flex: none
+    }
+
+    .upload-hint .help-link:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
     select,
     input[type=file] {
       min-width: 0;
@@ -472,7 +508,7 @@
 
     .range-control output {
       display: inline-block;
-      min-width: 4ch;
+      width: 7ch;
       text-align: right;
       font-variant-numeric: tabular-nums
     }
@@ -575,8 +611,8 @@
         <p class="subtitle">One object, two silhouettes.</p>
       </div>
       <div class="header-row">
-        <div class="status" id="status">READY / WEBGL</div>
-        <a class="btn" href="about.html" style="text-decoration:none;display:inline-flex;align-items:center">How it works</a>
+        <div class="status" id="status"></div>
+        <a class="btn" href="about.html" style="text-decoration:none;display:inline-flex;align-items:center">Instructions</a>
         <button type="button" class="btn" id="exportBtn">Export to OpenSCAD</button>
       </div>
     </header>
@@ -585,8 +621,14 @@
         <article class="panel front">
           <div class="panel-head"><strong>Front view</strong><span id="frontName">Arrow 3</span></div>
           <div class="preview" id="frontPreview"></div>
-          <div class="controls"><select id="frontSelect" aria-label="Front SVG"></select><input class="file-control"
-              id="frontFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload front SVG">
+          <div class="controls">
+            <div class="select-hint">Select a shape</div>
+            <select id="frontSelect" aria-label="Front SVG"></select>
+            <div class="upload-hint"><span>or upload your own .svg</span><a class="help-link"
+                href="about.html#svg-shape" target="_blank" rel="noopener" aria-label="How to design your own .svg shape"
+                title="How to design your own .svg shape">?</a></div>
+            <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
+              aria-label="Upload front SVG">
             <div class="transform-controls">
               <label class="chk"><input type="checkbox" id="frontFlipV"> Flip Vertical</label>
               <label class="chk"><input type="checkbox" id="frontFlipH"> Flip Horizontal</label>
@@ -596,8 +638,14 @@
         <article class="panel back">
           <div class="panel-head"><strong>Rear view</strong><span id="backName">Car</span></div>
           <div class="preview" id="backPreview"></div>
-          <div class="controls"><select id="backSelect" aria-label="Rear SVG"></select><input class="file-control"
-              id="backFile" type="file" accept="image/svg+xml,.svg" aria-label="Upload rear SVG">
+          <div class="controls">
+            <div class="select-hint">Select a shape</div>
+            <select id="backSelect" aria-label="Rear SVG"></select>
+            <div class="upload-hint"><span>or upload your own .svg</span><a class="help-link"
+                href="about.html#svg-shape" target="_blank" rel="noopener" aria-label="How to design your own .svg shape"
+                title="How to design your own .svg shape">?</a></div>
+            <input class="file-control" id="backFile" type="file" accept="image/svg+xml,.svg"
+              aria-label="Upload rear SVG">
             <div class="transform-controls">
               <label class="chk"><input type="checkbox" id="backFlipV"> Flip Vertical</label>
               <label class="chk"><input type="checkbox" id="backFlipH"> Flip Horizontal</label>
@@ -617,7 +665,7 @@
             aria-label="Interactive 3D impossible cylinder preview, back view"></canvas>
         </div>
         <div class="scene-controls">
-          <div class="range-control"><label for="sampleSlider">Samples</label><input id="sampleSlider" type="range"
+          <div class="range-control"><label for="sampleSlider">Sample Points</label><input id="sampleSlider" type="range"
               min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output id="sampleValue">248</output>
           </div>
           <div class="range-control"><label for="widthSlider">Width</label><input id="widthSlider" type="range" min="40"
@@ -764,7 +812,7 @@
       }
       return top.concat(bottom.slice(1), top.slice(0, 1));
     }
-    function build() { if (!state.front || !state.back || !rendererFront) return; const a = sample(state.front, state.samples, false, state.transform.front), b = sample(state.back, state.samples, true, state.transform.back), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('status').textContent = $('frontName').textContent + ' + ' + $('backName').textContent; rebuildGeometry(); }
+    function build() { if (!state.front || !state.back || !rendererFront) return; const a = sample(state.front, state.samples, false, state.transform.front), b = sample(state.back, state.samples, true, state.transform.back), pos = []; for (let i = 0; i < a.length; i++) { const x = a[i][0], y1 = a[i][1], y2 = b[i][1]; pos.push(x, (y1 + y2) / 2, (y1 - y2) / 2) } state.mesh = pos; const values = [[], [], []]; for (let i = 0; i < pos.length; i += 3)for (let j = 0; j < 3; j++)values[j].push(pos[i + j]); state.axisOrigin = values.map(v => (Math.min(...v) + Math.max(...v)) / 2); $('status').textContent = ''; rebuildGeometry(); }
     function normalizedThicknessRadius() { return state.thicknessMM / 2 / state.widthMM * CURVE_SAMPLE_SPAN }
     function vSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]] }
     function vCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]] }
