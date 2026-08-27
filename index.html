@@ -1097,6 +1097,24 @@ module ribbon_hull_chain(points) {
     }
 }
 
+// Leg sweep: at every point along the span, hull a ball at that curve point
+// with a ball directly below it at bottom_z (fixed, not per-point relative
+// like the main ribbon), then hull each consecutive pair of those columns
+// together - so the whole underside runs flush along bottom_z the entire
+// length of the leg, like a wall of ribbon meeting the floor.
+module leg_ribbon_chain(points, bottom_z) {
+    for (i = [0 : len(points) - 2]) {
+        p1 = points[i];
+        p2 = points[i + 1];
+        hull() {
+            translate(p1) sphere(r = wall_thickness / 2, $fn = 25);
+            translate([p1[0], p1[1], bottom_z]) sphere(r = wall_thickness / 2, $fn = 25);
+            translate(p2) sphere(r = wall_thickness / 2, $fn = 25);
+            translate([p2[0], p2[1], bottom_z]) sphere(r = wall_thickness / 2, $fn = 25);
+        }
+    }
+}
+
 // Three legs, placed where vertical half-planes from the xy-center of the
 // shape (one toward +y, the others 120 and 240 degrees around) meet the
 // curve. Each leg is a short ribbon spur - same cross-section as the main
@@ -1115,19 +1133,7 @@ module legs_for_curve(points) {
         p = hit_point(points, seg[0], seg[1]);
         span = leg_span_points(points, seg[0], seg[1], leg_width / 2);
 
-        ribbon_hull_chain(span);
-
-        // Each end of the span angles down and inward to a single foot at
-        // p's xy, keeping the same top/bottom-rail cross-section as the
-        // curve-following part (rather than tapering), hulled into it so
-        // the transition has no seam.
-        for (end = [span[0], span[len(span) - 1]])
-            hull() {
-                translate(end) sphere(r = wall_thickness / 2, $fn = 25);
-                translate([end[0], end[1], end[2] - ribbon_height]) sphere(r = wall_thickness / 2, $fn = 25);
-                translate([p[0], p[1], leg_bottom]) sphere(r = wall_thickness / 2, $fn = 25);
-                translate([p[0], p[1], leg_bottom + ribbon_height]) sphere(r = wall_thickness / 2, $fn = 25);
-            }
+        leg_ribbon_chain(span, leg_bottom);
 
         // Feet, flush with the leg bottoms: an almond pointing +y on the
         // 90-degree leg (the orientation marker), round feet on the others.
