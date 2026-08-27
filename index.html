@@ -291,12 +291,14 @@
       color: #d7e4e2
     }
 
-    .help-body p, .help-body li {
+    .help-body p,
+    .help-body li {
       font: inherit;
       color: inherit
     }
 
-    .help-body ul, .help-body ol {
+    .help-body ul,
+    .help-body ol {
       padding-left: 22px;
       margin: 10px 0
     }
@@ -724,7 +726,13 @@
 
       .controls {
         align-items: stretch;
-        flex-direction: column
+        flex-direction: column;
+        flex-wrap: nowrap
+      }
+
+      .controls>* {
+        flex: none;
+        width: 100%
       }
 
       input[type=file] {
@@ -750,7 +758,8 @@
       <div>
         <h1>Make Your Own Impossible Object</h1>
         <p class="subtitle">One object, two silhouettes.</p>
-        <p class="credit">By <a href="https://divisbyzero.com">David Richeson</a> &middot; <a href="https://github.com/divisbyzero">GitHub</a> &middot; <a href="#" id="aboutMathLink">The Math</a></p>
+        <p class="credit">By <a href="https://divisbyzero.com">David Richeson</a> &middot; <a
+            href="https://github.com/divisbyzero">GitHub</a> &middot; <a href="#" id="aboutMathLink">The Math</a></p>
       </div>
       <div class="header-row">
         <div class="status" id="status"></div>
@@ -766,8 +775,8 @@
           <div class="controls">
             <div class="select-hint">Select a shape</div>
             <select id="backSelect" aria-label="Image 2 SVG"></select>
-            <div class="upload-hint"><span>or upload your own .svg</span><button type="button" class="help-link svg-help"
-                aria-label="How to design your own .svg shape"
+            <div class="upload-hint"><span>or upload your own .svg</span><button type="button"
+                class="help-link svg-help" aria-label="How to design your own .svg shape"
                 title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="backFile" type="file" accept="image/svg+xml,.svg"
               aria-label="Upload Image 2 SVG">
@@ -783,8 +792,8 @@
           <div class="controls">
             <div class="select-hint">Select a shape</div>
             <select id="frontSelect" aria-label="Image 1 SVG"></select>
-            <div class="upload-hint"><span>or upload your own .svg</span><button type="button" class="help-link svg-help"
-                aria-label="How to design your own .svg shape"
+            <div class="upload-hint"><span>or upload your own .svg</span><button type="button"
+                class="help-link svg-help" aria-label="How to design your own .svg shape"
                 title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
               aria-label="Upload Image 1 SVG">
@@ -813,8 +822,9 @@
             <button type="button" id="freeViewBtn" aria-pressed="false">Front/Rear view</button>
             <button type="button" id="mirrorViewBtn" class="active" aria-pressed="true">Front/Mirror view</button>
           </div>
-          <div class="range-control"><label for="sampleSlider">Sample Points</label><input id="sampleSlider" type="range"
-              min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output id="sampleValue">248</output>
+          <div class="range-control"><label for="sampleSlider">Sample Points</label><input id="sampleSlider"
+              type="range" min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output
+              id="sampleValue">248</output>
           </div>
           <div class="range-control"><label for="widthSlider">Width</label><input id="widthSlider" type="range" min="40"
               max="150" step="1" value="80" aria-label="Overall width in millimeters"><output id="widthValue">80
@@ -864,7 +874,8 @@
     <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="instructionsModalTitle">
       <div class="modal-head">
         <h2 id="instructionsModalTitle">Instructions</h2>
-        <button type="button" class="modal-close" id="instructionsClose" aria-label="Close instructions">&times;</button>
+        <button type="button" class="modal-close" id="instructionsClose"
+          aria-label="Close instructions">&times;</button>
       </div>
       <div class="modal-body">
         <iframe id="instructionsFrame" src="about.html" title="Instructions"></iframe>
