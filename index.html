@@ -269,6 +269,41 @@
       color: var(--accent)
     }
 
+    .help-body {
+      display: block;
+      max-height: 70vh;
+      overflow: auto;
+      font: 14px/1.6 ui-sans-serif, system-ui, sans-serif;
+      color: #d7e4e2
+    }
+
+    .help-body p, .help-body li {
+      font: inherit;
+      color: inherit
+    }
+
+    .help-body ul, .help-body ol {
+      padding-left: 22px;
+      margin: 10px 0
+    }
+
+    .help-body code {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 1px 6px;
+      font: 13px ui-monospace, monospace;
+      color: var(--accent)
+    }
+
+    .help-body a {
+      color: var(--accent)
+    }
+
+    .help-body .step-no {
+      display: none
+    }
+
     .workspace {
       display: contents
     }
@@ -431,10 +466,12 @@
       height: 16px;
       border: 1px solid #35545a;
       border-radius: 50%;
+      background: transparent;
       color: var(--muted);
       text-decoration: none;
       font-size: 10px;
       line-height: 1;
+      cursor: pointer;
       flex: none
     }
 
@@ -714,9 +751,9 @@
           <div class="controls">
             <div class="select-hint">Select a shape</div>
             <select id="backSelect" aria-label="Image 2 SVG"></select>
-            <div class="upload-hint"><span>or upload your own .svg</span><a class="help-link"
-                href="about.html#svg-shape" target="_blank" rel="noopener" aria-label="How to design your own .svg shape"
-                title="How to design your own .svg shape">?</a></div>
+            <div class="upload-hint"><span>or upload your own .svg</span><button type="button" class="help-link svg-help"
+                aria-label="How to design your own .svg shape"
+                title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="backFile" type="file" accept="image/svg+xml,.svg"
               aria-label="Upload Image 2 SVG">
             <div class="transform-controls">
@@ -731,9 +768,9 @@
           <div class="controls">
             <div class="select-hint">Select a shape</div>
             <select id="frontSelect" aria-label="Image 1 SVG"></select>
-            <div class="upload-hint"><span>or upload your own .svg</span><a class="help-link"
-                href="about.html#svg-shape" target="_blank" rel="noopener" aria-label="How to design your own .svg shape"
-                title="How to design your own .svg shape">?</a></div>
+            <div class="upload-hint"><span>or upload your own .svg</span><button type="button" class="help-link svg-help"
+                aria-label="How to design your own .svg shape"
+                title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
               aria-label="Upload Image 1 SVG">
             <div class="transform-controls">
@@ -819,6 +856,15 @@
       <div class="modal-body">
         <iframe id="instructionsFrame" src="about.html" title="Instructions"></iframe>
       </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="helpModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+      <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <h2 id="helpModalTitle">How to design your own .svg shape</h2>
+        <button type="button" class="modal-close" id="helpClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body help-body" id="helpBody"></div>
     </div>
   </div>
   <script type="module">
@@ -1139,6 +1185,19 @@ ${SCAD_MODULES}`
     function closeExportModal() { $('exportModal').hidden = true }
     function openInstructionsModal() { $('instructionsModal').hidden = false }
     function closeInstructionsModal() { $('instructionsModal').hidden = true }
+    let aboutDoc = null;
+    async function loadAboutDoc() { if (!aboutDoc) { const html = await (await fetch('about.html')).text(); aboutDoc = new DOMParser().parseFromString(html, 'text/html') } return aboutDoc }
+    async function openHelpModal(sectionId) {
+      const body = $('helpBody');
+      body.textContent = 'Loading…';
+      $('helpModal').hidden = false;
+      try {
+        const doc = await loadAboutDoc(), heading = doc.getElementById(sectionId), card = heading && heading.nextElementSibling;
+        body.replaceChildren();
+        if (card) body.appendChild(card.cloneNode(true)); else body.textContent = 'Could not load instructions.';
+      } catch (e) { body.textContent = 'Could not load instructions.' }
+    }
+    function closeHelpModal() { $('helpModal').hidden = true }
     function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legDiameter: +$('scadLegDiameter').value, legExtension: +$('scadLegExtension').value, legFlare: +$('scadLegFlare').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
     function camPos(azimuth, elevation, distance) { return new THREE.Vector3(distance * Math.cos(elevation) * Math.sin(azimuth), distance * Math.cos(elevation) * Math.cos(azimuth), distance * Math.sin(elevation)) }
     function updateCamera() {
@@ -1166,7 +1225,7 @@ ${SCAD_MODULES}`
       $('paneLabelBack').textContent = mirrorMode ? 'Rear Mirror View' : 'Rear View';
       $('legendBack').textContent = mirrorMode ? 'Drag horizontally to orbit (mirror) · wheel or pinch to zoom' : 'Drag horizontally to orbit · wheel or pinch to zoom';
     }
-    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(CLEAR_COLOR, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); setViewMode(state.viewMode); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; $('instructionsBtn').onclick = openInstructionsModal; $('instructionsClose').onclick = closeInstructionsModal; $('instructionsModal').onclick = e => { if (e.target === $('instructionsModal')) closeInstructionsModal() }; document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('exportModal').hidden) closeExportModal(); if (!$('instructionsModal').hidden) closeInstructionsModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function init() { options(); rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(CLEAR_COLOR, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontSelect').onchange = e => choose('front', e.target.value); $('backSelect').onchange = e => choose('back', e.target.value); $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); setViewMode(state.viewMode); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; $('instructionsBtn').onclick = openInstructionsModal; document.querySelectorAll('.svg-help').forEach(btn => btn.onclick = () => openHelpModal('svg-shape')); $('instructionsClose').onclick = closeInstructionsModal; $('instructionsModal').onclick = e => { if (e.target === $('instructionsModal')) closeInstructionsModal() }; $('helpClose').onclick = closeHelpModal; $('helpModal').onclick = e => { if (e.target === $('helpModal')) closeHelpModal() }; document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('exportModal').hidden) closeExportModal(); if (!$('instructionsModal').hidden) closeInstructionsModal(); if (!$('helpModal').hidden) closeHelpModal() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
