@@ -194,10 +194,11 @@
         must have the following properties.</p>
       <ul>
         <li>It must be a single closed curve, like the sample shapes.</li>
-        <li>Every vertical line must cross the curve at exactly one or two points—no indentations from the sides. In mathematical terms, the curve must be bounded above and below by the graphs of two functions
-          of <em>x</em>. Indentations that violate this rule will not be visible in the final model.</li>
+        <li>Every vertical line must cross the curve at exactly one or two points (or vertical line segments)—no indentations from the sides.</li>
         <li>Size doesn't matter. The two shapes are scaled automatically to match.</li>
+        <li>The figures below show examples of valid and invalid shapes. The indentations on the five-pointed star would be cut off by the algorithm.</li>
       </ul>
+      <img src="photos/possibleshapesdark.png" alt="Two six-pointed stars compared: a valid shape with vertical dashed lines crossing the outline at most twice, and an invalid shape where the star's points create indentations crossed more than twice by the same vertical lines" style="max-width:100%; border-radius:6px; margin-bottom:10px;">
       <p>Use any vector drawing program to create the shape. If you want to define the curve mathematically, you can use <a href="https://www.geogebra.org/">GeoGebra</a> or <a href="https://www.desmos.com/">Desmos</a>. In that case, turn off the axes, grid, and any labels. Regardless of the tool you use, export the curve as an <code>.svg</code> file. </p>
     </div>
 
