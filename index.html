@@ -38,16 +38,14 @@
 
     html,
     body {
-      height: 100%;
-      overflow: hidden
+      height: 100%
     }
 
     .app {
       height: 100vh;
-      overflow: auto;
       display: grid;
       grid-template-columns: minmax(200px, 24%) 8px minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto minmax(0, 1fr);
       grid-template-areas:
         "header header stages"
         "left   divider stages";
@@ -327,9 +325,9 @@
     .left {
       grid-area: left;
       min-width: 0;
-      min-height: 0;
+      min-height: 326px;
       display: grid;
-      grid-template-rows: 1fr 1fr;
+      grid-template-rows: minmax(140px, 1fr) minmax(140px, 1fr);
       gap: 14px;
       padding: 14px 0 18px 18px
     }
@@ -355,7 +353,7 @@
     }
 
     .panel {
-      min-height: 0;
+      min-height: 140px;
       display: grid;
       grid-template-rows: auto 1fr auto;
       overflow: hidden;
@@ -520,16 +518,16 @@
     .stages {
       grid-area: stages;
       min-width: 0;
-      min-height: 0;
+      min-height: 508px;
       position: relative;
       display: grid;
-      grid-template-rows: 1fr 1fr auto;
+      grid-template-rows: minmax(160px, 1fr) minmax(160px, 1fr) minmax(min-content, auto);
       gap: 12px
     }
 
     .stage {
       min-width: 0;
-      min-height: 0;
+      min-height: 160px;
       position: relative;
       overflow: hidden;
       border: 1px solid var(--line);
@@ -672,7 +670,7 @@
       font: 14px ui-sans-serif, system-ui, sans-serif
     }
 
-    @media(max-width:760px) {
+    @media(max-width:760px), (max-width:900px) and (orientation:portrait) {
 
       html,
       body {
