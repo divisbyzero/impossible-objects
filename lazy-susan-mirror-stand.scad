@@ -12,14 +12,21 @@
 // base reads as a true Norman window -- a semicircle capping a
 // rectangle, one continuous outline with no notch, gap, or seam.
 //
-// The spinner itself is untouched — same geometry as lazy-susan.scad,
-// centered on the Z axis. Only the mirror stand's raised boss (the
-// part tall enough to reach the spinner's rotation plane) is set back
-// far enough that it sits mirror_clearance mm beyond the circle the
-// spinner's arm tips sweep out, so the arms spin freely and just
-// barely miss it. The thin flat plate itself can safely run right
-// through the spinner's footprint because it's well below spinner
-// height -- only the boss needs the clearance.
+// The spinner itself is otherwise untouched — same geometry as
+// lazy-susan.scad, centered on the Z axis. Only the mirror stand's
+// raised boss (the part tall enough to reach the spinner's rotation
+// plane) is set back far enough that it sits mirror_clearance mm
+// beyond the circle the spinner's arm tips sweep out, so the arms spin
+// freely and just barely miss it. The thin flat plate itself can
+// safely run right through the spinner's footprint because it's well
+// below spinner height -- only the boss needs the clearance.
+//
+// A rotation-stop mechanism limits the spinner to exactly 180 degrees
+// of travel: a tab hangs below the spinner's pointed (90-degree) arm,
+// and two matching tabs rise from the base's floor, positioned so the
+// spinner can swing only from the pointer aimed at the mirror to
+// aimed directly away from it. See the "Rotation stop" parameter group
+// and the spinner_stop_tab() / base_stop_tabs() modules for details.
 //
 // Preview mode picks which of the two parts to show (they print
 // separately): the spinner plate, or the fused base + mirror stand.
@@ -95,6 +102,19 @@ corner_fn = 32;            // smoothness of the rounded corners
 // swept circle and the mirror stand's front edge.
 mirror_clearance = 1.5;
 
+/* [Rotation stop] */
+// A tab hanging below the spinner's pointed (90-degree) arm, plus two
+// matching tabs rising from the base, limit the spinner to exactly 180
+// degrees of rotation: from the pointed arm aimed at the mirror to
+// aimed directly away from it. All three tabs share the same radial
+// span and width; see the Derived values / module comments below for
+// how they're positioned to interlock.
+stop_width = 2;   // mm, tangential width of each stop tab
+stop_r_in  = 20;  // mm, inner radius of the stop tabs
+stop_r_out = 30;  // mm, outer radius of the stop tabs
+stop_drop  = 3;   // mm, how far the spinner's tab hangs below its bottom face
+stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
+
 /* [Preview / debug helpers] */
 show_top_groove = true;
 
@@ -122,6 +142,13 @@ assert(groove_length + max(leg_diameter, foot_width_90, foot_diameter_others) / 
 assert(groove_length > (foot_width_90 + groove_clearance) * sqrt(3) / 2,
     "groove_length is too short for the fish-eye tip on the 90-degree arm; increase groove_length/object_width or decrease foot_width_90/groove_clearance");
 assert(mirror_clearance >= 0, "mirror_clearance must not be negative");
+assert(stop_width > 0 && stop_width < arm_width,
+    "stop_width must be positive and narrower than arm_width so the spinner's tab stays inside the pointed arm");
+assert(stop_r_in > hub_diameter / 2 && stop_r_in < stop_r_out,
+    "stop_r_in must be past the hub and less than stop_r_out");
+assert(stop_r_out < arm_length && stop_r_out < base_radius,
+    "stop_r_out must be less than both arm_length (so it stays on the spinner's arm) and base_radius (so the away-from-mirror base tab has a full disc under it)");
+assert(stop_drop > 0 && stop_rise > 0, "stop_drop and stop_rise must be positive");
 
 // ===== Derived values =====
 
@@ -224,19 +251,36 @@ module top_groove() {
     }
 }
 
+// Rotation-stop tab on the spinner: a rib centered on the pointed
+// (90-degree) arm's centerline (the local +Y axis), running from
+// stop_r_in to stop_r_out and hanging stop_drop mm below the spinner's
+// flat bottom face (Z = 0). Meets the two stop tabs on the base (see
+// base_stop_tabs() below) to limit the spinner to exactly 180 degrees
+// of rotation. Printable without supports: the model's bottom face
+// (Z = 0) is the face placed UP when printing groove-side-down per the
+// notes at the end of this file, so this tab prints as a simple
+// upward-facing rib, not an overhang.
+module spinner_stop_tab() {
+    translate([-stop_width / 2, stop_r_in, -stop_drop])
+        cube([stop_width, stop_r_out - stop_r_in, stop_drop]);
+}
+
 module lazy_susan_plate() {
-    difference() {
-        linear_extrude(height = box_height)
-            three_arm_plate_2d(arm_length, arm_width, hub_diameter);
+    union() {
+        difference() {
+            linear_extrude(height = box_height)
+                three_arm_plate_2d(arm_length, arm_width, hub_diameter);
 
-        // Round recess in the underside for a press-fit insert.
-        translate([0, 0, -1])
-            cylinder(d = insert_diameter + insert_clearance,
-                     h = insert_pocket_depth + 1);
+            // Round recess in the underside for a press-fit insert.
+            translate([0, 0, -1])
+                cylinder(d = insert_diameter + insert_clearance,
+                         h = insert_pocket_depth + 1);
 
-        if (show_top_groove)
-            translate([0, 0, box_height - groove_depth])
-                top_groove();
+            if (show_top_groove)
+                translate([0, 0, box_height - groove_depth])
+                    top_groove();
+        }
+        spinner_stop_tab();
     }
 }
 
@@ -246,6 +290,39 @@ module lazy_susan_base() {
         cylinder(d = base_center_diameter, h = base_height + base_center_extra);
         translate([0, 0, base_height + base_center_extra])
             cylinder(r = base_top_radius, h = base_top_extra);
+    }
+}
+
+// Rotation-stop tabs on the base: two ribs, stop_rise mm tall, rising
+// from the floor (Z = base_height). One sits just past the "toward
+// mirror" radial line (+X, X from stop_r_in to stop_r_out) and the
+// other just past the "away from mirror" line (-X, mirrored). Both are
+// offset stop_width / 2 to the -Y side of their line (rather than
+// centered on it): since the spinner's tab is centered on its own line
+// when it's aimed exactly at (or away from) the mirror, offsetting the
+// base tab by half the spinner tab's width means the two tabs' facing
+// edges meet exactly at that moment, not before or after it. Both
+// tabs use the same -Y offset -- not mirrored left/right -- because
+// that is the side that blocks the spinner from swinging past either
+// end of its 180-degree arc; see the geometry note below.
+//
+// Geometry: picture the spinner tab starting centered on the +X line
+// (pointer aimed at the mirror), resting against the first base tab.
+// Rotating the spinner counterclockwise lifts its tab away (+Y) from
+// that base tab and sweeps it through the +Y half-plane; by the time
+// it reaches the -X line (pointer aimed away from the mirror), the
+// tab has swung back down to meet the second base tab from the same
+// -Y side. So both stops sit on -Y, and the spinner is confined to the
+// 180-degree arc between them.
+module base_stop_tab(x0, x1) {
+    translate([x0, -(stop_width / 2 + stop_width), base_height])
+        cube([x1 - x0, stop_width, stop_rise]);
+}
+
+module base_stop_tabs() {
+    union() {
+        base_stop_tab(stop_r_in, stop_r_out);    // toward the mirror (+X)
+        base_stop_tab(-stop_r_out, -stop_r_in);  // away from the mirror (-X)
     }
 }
 
@@ -320,6 +397,7 @@ module mirror_stand() {
 module base_and_mirror_stand() {
     union() {
         lazy_susan_base();
+        base_stop_tabs();
         translate([stand_origin_x, stand_origin_y, 0])
             mirror_stand();
     }
@@ -337,6 +415,9 @@ echo(str("Mirror stand: base_depth=", base_depth, " mm, stand_width=", stand_wid
 echo(str("Mirror stand boss (holds the mirror) sits at X=", stand_origin_x + boss_near_x,
          " mm from the spinner axis, ", mirror_clearance,
          " mm beyond the spinner's swept circle (radius ", spinner_sweep_radius, " mm)"));
+echo(str("Rotation stop: tabs from r=", stop_r_in, " to r=", stop_r_out,
+         " mm, ", stop_width, " mm wide -- limits the spinner to 180 degrees",
+         " (pointer at the mirror to pointer away from it)"));
 
 if (show_spinner)
     color(plate_color) lazy_susan_plate();
@@ -346,9 +427,14 @@ else
 // ===================================================================
 // Printing notes
 // ===================================================================
-// Two separate prints, same as before:
+// Two separate prints:
 //   - show_spinner = true:  the 3-arm spinner plate. Print top (groove)
-//     face DOWN on the build plate for the smoothest top surface.
+//     face DOWN on the build plate, same as before -- this also puts
+//     the rotation-stop tab (which hangs below the bottom/Z=0 face)
+//     pointing straight UP once flipped onto the bed, so it prints as
+//     a simple upright rib with no overhang and needs no supports.
 //   - show_spinner = false: the fused lazy-susan base + mirror stand.
-//     Print flat side down (Z = 0), same as each part printed alone.
+//     Print flat side down (Z = 0); the two base stop tabs and the
+//     mirror boss all rise from that same flat face, so this also
+//     needs no supports.
 // ===================================================================
