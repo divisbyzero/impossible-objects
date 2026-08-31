@@ -69,6 +69,7 @@ Instructions panel and `about.html`.
 | `dowel-stand.scad` | Printable stand + angled viewing window for displaying an object on a 7 mm dowel |
 | `lazy-susan.scad`, `lazy-susan.json` | Printable lazy-susan mount plate for an impossible object, with an OpenSCAD Customizer parameter preset |
 | `mirror_stand.scad` | Printable leaning mirror stand for viewing the rear-silhouette illusion via reflection |
+| `lazy-susan-mirror-stand.scad` | Combined lazy susan + mirror stand: same spinner as `lazy-susan.scad`, with its base fused to `mirror_stand.scad`'s mirror stand, pulled in as close as the spinner arms allow |
 
 ## Running locally
 
