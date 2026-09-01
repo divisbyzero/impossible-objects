@@ -59,7 +59,7 @@ base_radius          = object_width / 3;
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
 base_top_extra       = 6.5;  // top post rises this much above center cylinder
-base_top_radius      = 3.9;
+base_top_radius      = 4.0;
 
 /* [Top groove for the impossible-object feet] */
 groove_clearance      = .5;    // groove is this much wider than the feet
@@ -67,7 +67,7 @@ groove_depth          = foot_height;  // groove depth matches the foot so it sit
 groove_length         = object_width / 2;  // length of each arm from the center
 
 /* [Bottom insert pocket (mm)] */
-insert_diameter       = 22;    // your round insert diameter
+insert_diameter       = 21.6;    // your round insert diameter
 insert_clearance      = 0.2;   // small added diameter for snug fit
 insert_pocket_depth   = 4;     // pocket depth from bottom face
 
