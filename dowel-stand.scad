@@ -16,24 +16,23 @@ dowel_hole_depth = 20;    // how deep the dowel is expected to sit in the hole; 
 
 /* [Stand base disc (mm)] */
 base_diameter         = 100;  // thin disc that sits on the table
-base_height_no_tether = 4;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_diameter so the horizontal cylinder sits flush within the full slab -- see base_height below
+base_height_no_tether = 4;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_base_height so the tether hole sits fully within it -- see base_height below
 
 /* [Stand center post (mm)] */
 post_diameter = 15;   // taller cylinder in the middle, holds the dowel
 post_height   = dowel_hole_depth+1;   // height of the post above the base disc
 
-/* [Tether dowel (mm)] */
-has_tether_dowel = true;   // adds a horizontal cylinder at the base, bored for a second dowel that ties this stand to mirror-spinner-stand.scad at a fixed distance; must match that file's own has_tether_dowel toggle
-tether_diameter  = post_diameter;      // outer diameter of the horizontal cylinder; matches the vertical post
-tether_length    = dowel_hole_depth+1; // how far the cylinder extends beyond the base disc's edge
+/* [Tether dowel hole (mm)] */
+has_tether_dowel   = true;  // bores a horizontal hole into the base disc's edge, sized for a second dowel that ties this stand to mirror-spinner-stand.scad at a fixed distance; must match that file's own has_tether_dowel toggle. Also thickens the base disc (see tether_base_height) so the hole sits fully within it, not breaking through the top or bottom face.
+tether_base_height = post_diameter; // thickness the base disc is made when has_tether_dowel is true (replacing base_height_no_tether), giving the hole enough surrounding material; defaults to match the vertical post's diameter
+tether_hole_depth  = 20;    // mm, how deep the horizontal hole is bored into the base disc from its edge
 
 /* [Rendering] */
 $fn = 96;
 
 // ===== Derived values =====
 dowel_hole_d = dowel_diameter + hole_clearance;
-tether_embed = tether_diameter / 2; // how far the horizontal cylinder is buried into the base disc for a solid fused joint; also its resting height above the table, since it sits tangent to Z=0 like the base disc
-base_height  = has_tether_dowel ? tether_diameter : base_height_no_tether; // full disc thickness; matches the tether cylinder's height when enabled so it sits flush within the slab (top and bottom) instead of poking out above a thin disc
+base_height  = has_tether_dowel ? tether_base_height : base_height_no_tether; // full disc thickness; thickened when enabled so the tether hole sits fully within the slab (top and bottom) instead of breaking through
 
 // ===== Checks =====
 assert(base_diameter > post_diameter,
@@ -42,49 +41,45 @@ assert(post_diameter > dowel_hole_d,
     "post_diameter must be larger than the dowel hole diameter");
 assert(post_height > dowel_hole_depth,
     "post_height should be greater than dowel_hole_depth so the hole doesn't pass all the way through");
-assert(tether_diameter > dowel_hole_d,
-    "tether_diameter must be larger than the dowel hole diameter");
-assert(tether_length > dowel_hole_depth,
-    "tether_length should be greater than dowel_hole_depth so the hole doesn't pass all the way through");
-assert(base_diameter / 2 > tether_embed,
-    "base_diameter is too small for the tether cylinder to embed into the disc");
+assert(!has_tether_dowel || tether_base_height > dowel_hole_d,
+    "tether_base_height must be larger than the dowel hole diameter so the tether hole doesn't break through the disc's top or bottom face");
+assert(!has_tether_dowel || tether_hole_depth > 0,
+    "tether_hole_depth must be positive");
+assert(!has_tether_dowel || tether_hole_depth < base_diameter / 2,
+    "tether_hole_depth must be less than the disc's radius so the hole stays blind and doesn't break through the far side or reach the center post");
 
 // ===== Stand =====
 
-// Horizontal cylinder resting on the table (tangent at Z=0, like the
-// base disc itself) and embedded into the disc's edge, bored with a
-// hole (open at the outward tip) for a second dowel. That dowel spans
-// over to the matching cylinder on mirror-spinner-stand.scad, holding
-// the two stands a fixed distance apart.
-module tether_post() {
-    translate([base_diameter / 2 - tether_embed, 0, tether_embed])
-        rotate([0, 90, 0])
-            difference() {
-                cylinder(d = tether_diameter, h = tether_embed + tether_length);
-
-                // dowel hole, open at the outward tip
-                translate([0, 0, tether_embed + tether_length - dowel_hole_depth])
-                    cylinder(d = dowel_hole_d, h = dowel_hole_depth + 1);
-            }
+// Horizontal hole bored into the base disc's edge -- open at the outer
+// edge, blind at the inner end -- sized for a second dowel. That dowel
+// spans over to the matching hole on mirror-spinner-stand.scad,
+// holding the two stands a fixed distance apart.
+module tether_hole() {
+    overcut = 1; // extra length so the cutter fully clears the disc's outer surface
+    translate([base_diameter / 2 + overcut, 0, base_height / 2])
+        rotate([0, -90, 0])
+            cylinder(d = dowel_hole_d, h = tether_hole_depth + overcut);
 }
 
 module stand() {
-    union() {
-        // thin base disc on the table
-        cylinder(d = base_diameter, h = base_height);
+    difference() {
+        union() {
+            // base disc on the table (thickened when the tether hole is enabled)
+            cylinder(d = base_diameter, h = base_height);
 
-        // taller center post
-        translate([0, 0, base_height])
-            difference() {
-                cylinder(d = post_diameter, h = post_height);
+            // taller center post
+            translate([0, 0, base_height])
+                difference() {
+                    cylinder(d = post_diameter, h = post_height);
 
-                // dowel hole, open at the top
-                translate([0, 0, post_height - dowel_hole_depth])
-                    cylinder(d = dowel_hole_d, h = dowel_hole_depth + 1);
-            }
+                    // dowel hole, open at the top
+                    translate([0, 0, post_height - dowel_hole_depth])
+                        cylinder(d = dowel_hole_d, h = dowel_hole_depth + 1);
+                }
+        }
 
         if (has_tether_dowel)
-            tether_post();
+            tether_hole();
     }
 }
 
@@ -93,8 +88,8 @@ echo(str("Dowel hole diameter: ", dowel_hole_d, " mm (dowel ", dowel_diameter,
 echo(str("Stand: base d=", base_diameter, " x h=", base_height,
          " mm, post d=", post_diameter, " x h=", post_height, " mm"));
 echo(has_tether_dowel
-    ? str("Tether dowel cylinder: d=", tether_diameter, " mm, extends ", tether_length,
-          " mm beyond the base disc's edge; base disc thickness raised to match (h=", base_height, " mm)")
-    : "Tether dowel cylinder: disabled");
+    ? str("Tether dowel hole: d=", dowel_hole_d, " mm, ", tether_hole_depth,
+          " mm deep, bored into the base disc's edge; base disc thickness raised to match (h=", base_height, " mm)")
+    : "Tether dowel hole: disabled");
 
 stand();

@@ -39,11 +39,11 @@
 // ===================================================================
 
 /* [Lazy susan base dimensions (mm)] */
-base_height_no_tether = 3;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_diameter so the horizontal cylinder sits flush within the full slab -- see base_height below
+base_height_no_tether = 3;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_base_height so the tether hole sits fully within it -- see base_height below
 base_radius           = 110 / 3;  // must match object_width / 3, where object_width matches spinner.scad
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
-base_top_extra       = 9;    // top post rises this much above center cylinder; must leave the spinner enough clearance above the tether dowel boss below (see the tether_clearance check)
+base_top_extra       = 6.5;  // top post rises this much above center cylinder
 base_top_radius      = 4.0;
 
 /* [Mirror] */
@@ -94,24 +94,21 @@ stop_r_in  = 20;  // mm, inner radius of the stop tabs; must match spinner.scad
 stop_r_out = 30;  // mm, outer radius of the stop tabs; must match spinner.scad
 stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 
-/* [Tether dowel] */
-// Adds a horizontal cylinder at the edge of the lazy-susan base disc,
-// on the opposite side from the mirror, bored for a dowel that ties
-// this stand to dowel-stand.scad at a fixed distance. Toggle it with
+/* [Tether dowel hole (mm)] */
+// Bores a horizontal hole into the lazy-susan base disc's edge, on the
+// opposite side from the mirror, sized for a dowel that ties this
+// stand to dowel-stand.scad at a fixed distance. Toggle it with
 // has_tether_dowel below; dowel-stand.scad has its own independent
-// toggle for its matching cylinder, so set both true to use the
-// tether. The boss rests on the table (tangent at Z=0, like the base
-// disc) so it stays low enough to pass underneath the spinner as it
-// rotates through the away-from-mirror position -- see the
-// tether_clearance check below, which keeps base_top_extra tall
-// enough for the spinner to clear it.
-has_tether_dowel = true;
-dowel_diameter    = 6.5;  // actual diameter of the connecting dowel; must match dowel-stand.scad
-hole_clearance    = 0;    // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad
-dowel_hole_depth  = 20;   // how deep the dowel is expected to sit in the hole; must match dowel-stand.scad
-tether_diameter   = 10;   // mm, outer diameter of the horizontal boss, resting tangent to the table (Z=0) like the base disc; kept slim so it clears the spinner without needing a very tall base_top_extra
-tether_length     = dowel_hole_depth + 1; // mm, how far the boss extends beyond the base disc's edge
-tether_clearance  = 2;    // mm, minimum vertical gap kept between the top of the boss and the spinner's bottom face
+// toggle for its matching hole, so set both true to use the tether.
+// Also thickens the base disc (see tether_base_height) so the hole
+// sits fully within it, not breaking through the top or bottom face.
+// Since the hole is bored into the disc rather than protruding above
+// it, it needs no clearance from the spinner regardless of depth.
+has_tether_dowel   = true;
+dowel_diameter     = 6.5; // actual diameter of the connecting dowel; must match dowel-stand.scad
+hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad
+tether_base_height = 10;  // mm, thickness the base disc is made when has_tether_dowel is true (replacing base_height_no_tether), giving the hole enough surrounding material
+tether_hole_depth  = 20;  // mm, how deep the horizontal hole is bored into the base disc from its edge
 
 /* [Preview / debug helpers] */
 stand_color = "DeepSkyBlue";
@@ -119,11 +116,12 @@ stand_color = "DeepSkyBlue";
 $fn = 64;
 
 // Computed ahead of the checks below (rather than in the main Derived
-// values section further down) because those checks depend on it: when
-// the tether dowel is enabled, the disc's thickness matches
-// tether_diameter so the horizontal cylinder sits flush within the
-// full slab, top and bottom, instead of poking out above a thin disc.
-base_height = has_tether_dowel ? tether_diameter : base_height_no_tether;
+// values section further down) because those checks depend on them:
+// when the tether dowel is enabled, the disc's thickness matches
+// tether_base_height so the tether hole sits fully within the full
+// slab, top and bottom, instead of breaking through.
+base_height  = has_tether_dowel ? tether_base_height : base_height_no_tether;
+dowel_hole_d = dowel_diameter + hole_clearance;
 
 // ===== Checks =====
 assert(base_height > 0 && base_radius > 0,
@@ -137,21 +135,18 @@ assert(stop_r_in > 0 && stop_r_in < stop_r_out,
 assert(stop_r_out < base_radius,
     "stop_r_out must be less than base_radius so the away-from-mirror base tab has a full disc under it");
 assert(stop_rise > 0, "stop_rise must be positive");
-assert(tether_diameter > dowel_diameter + hole_clearance,
-    "tether_diameter must be larger than the dowel hole diameter");
-assert(tether_length > dowel_hole_depth,
-    "tether_length should be greater than dowel_hole_depth so the hole doesn't pass all the way through");
-assert(base_radius > tether_diameter / 2,
-    "base_radius is too small for the tether cylinder to embed into the disc");
+assert(!has_tether_dowel || tether_base_height > dowel_hole_d,
+    "tether_base_height must be larger than the dowel hole diameter so the tether hole doesn't break through the disc's top or bottom face");
+assert(!has_tether_dowel || tether_hole_depth > 0,
+    "tether_hole_depth must be positive");
+// The hole is centered on Y=0, pointing straight at the spinner axis,
+// so its blind end must stay far enough from the origin (by its own
+// radius, plus the center post's) to not break into the center post.
 assert(!has_tether_dowel ||
-    base_height + base_center_extra + base_top_extra
-        >= tether_diameter + tether_clearance,
-    "base_top_extra is too small for the spinner to clear the tether dowel boss; increase base_top_extra or decrease tether_diameter");
+    base_radius - tether_hole_depth > dowel_hole_d / 2 + base_center_diameter / 2,
+    "tether_hole_depth is too deep and would break into the center post; decrease tether_hole_depth");
 
 // ===== Derived values =====
-
-dowel_hole_d = dowel_diameter + hole_clearance;
-tether_embed = tether_diameter / 2; // how far the horizontal cylinder is buried into the base disc for a solid fused joint; also its resting height above the table, since it sits tangent to Z=0 like the base disc
 
 // The mirror stand's width matches the lazy-susan base disc's diameter,
 // so the stand reads as a continuation of the disc rather than a
@@ -203,24 +198,20 @@ module lazy_susan_base() {
     }
 }
 
-// Horizontal cylinder resting on the table (tangent at Z=0, like the
-// base disc itself), embedded into the disc's edge on the side
-// opposite the mirror (-X) and bored with a hole (open at the outward
-// tip) for a dowel. That dowel spans over to the matching cylinder on
-// dowel-stand.scad, holding the two stands a fixed distance apart. Its
-// top stays below the spinner's swept bottom face as it rotates
-// through the away-from-mirror position -- see the tether_clearance
-// check above.
-module tether_post() {
-    translate([-(base_radius - tether_embed), 0, tether_embed])
-        rotate([0, -90, 0])
-            difference() {
-                cylinder(d = tether_diameter, h = tether_embed + tether_length);
-
-                // dowel hole, open at the outward tip
-                translate([0, 0, tether_embed + tether_length - dowel_hole_depth])
-                    cylinder(d = dowel_hole_d, h = dowel_hole_depth + 1);
-            }
+// Horizontal hole bored into the lazy-susan base disc's edge, centered
+// on Y=0 so it sits on the disc's semicircle centerline and points
+// straight at the spinner axis -- open at the outer edge, blind at the
+// inner end. Sized for a dowel that spans over to the matching hole on
+// dowel-stand.scad, holding the two stands a fixed distance apart. It
+// never collides with the away-from-mirror rotation-stop tab: the tab
+// rises from Z=base_height upward, while the hole sits at the disc's
+// mid-thickness (Z=base_height/2) and stays below Z=base_height by
+// construction (see the tether_base_height > dowel_hole_d check above).
+module tether_hole() {
+    overcut = 1; // extra length so the cutter fully clears the disc's outer surface
+    translate([-(base_radius + overcut), 0, base_height / 2])
+        rotate([0, 90, 0])
+            cylinder(d = dowel_hole_d, h = tether_hole_depth + overcut);
 }
 
 // Rotation-stop tabs on the base: two ribs, stop_rise mm tall, rising
@@ -325,14 +316,16 @@ module mirror_stand() {
 // clear the spinning arms. =====
 
 module base_and_mirror_stand() {
-    union() {
-        lazy_susan_base();
-        if (has_rotation_stop)
-            base_stop_tabs();
+    difference() {
+        union() {
+            lazy_susan_base();
+            if (has_rotation_stop)
+                base_stop_tabs();
+            translate([stand_origin_x, stand_origin_y, 0])
+                mirror_stand();
+        }
         if (has_tether_dowel)
-            tether_post();
-        translate([stand_origin_x, stand_origin_y, 0])
-            mirror_stand();
+            tether_hole();
     }
 }
 
@@ -350,16 +343,17 @@ echo(has_rotation_stop
           " (pointer at the mirror to pointer away from it)")
     : "Rotation stop tabs: disabled");
 echo(has_tether_dowel
-    ? str("Tether dowel cylinder: d=", tether_diameter, " mm, extends ", tether_length,
-          " mm beyond the base disc's edge, away from the mirror; base disc thickness raised to match (h=", base_height, " mm)")
-    : "Tether dowel cylinder: disabled");
+    ? str("Tether dowel hole: d=", dowel_hole_d, " mm, ", tether_hole_depth,
+          " mm deep, bored into the base disc's edge, away from the mirror; base disc thickness raised to match (h=", base_height, " mm)")
+    : "Tether dowel hole: disabled");
 
 color(stand_color) base_and_mirror_stand();
 
 // ===================================================================
 // Printing notes
 // ===================================================================
-// Print flat side down (Z = 0); the two base stop tabs (if enabled),
-// the tether dowel boss (if enabled), and the mirror boss all rise
-// from that same flat face, so this needs no supports.
+// Print flat side down (Z = 0); the two base stop tabs (if enabled)
+// and the mirror boss rise from that same flat face, so this needs no
+// supports. The tether dowel hole (if enabled) is a horizontal bore --
+// small enough in diameter to bridge cleanly without supports.
 // ===================================================================
