@@ -43,7 +43,7 @@ base_height          = 3;
 base_radius          = 110 / 3;  // must match object_width / 3, where object_width matches spinner.scad
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
-base_top_extra       = 6.5;  // top post rises this much above center cylinder
+base_top_extra       = 9;    // top post rises this much above center cylinder; must leave the spinner enough clearance above the tether dowel boss below (see the tether_clearance check)
 base_top_radius      = 4.0;
 
 /* [Mirror] */
@@ -94,6 +94,25 @@ stop_r_in  = 20;  // mm, inner radius of the stop tabs; must match spinner.scad
 stop_r_out = 30;  // mm, outer radius of the stop tabs; must match spinner.scad
 stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 
+/* [Tether dowel] */
+// Adds a horizontal cylinder at the edge of the lazy-susan base disc,
+// on the opposite side from the mirror, bored for a dowel that ties
+// this stand to dowel-stand.scad at a fixed distance. Toggle it with
+// has_tether_dowel below; dowel-stand.scad has its own independent
+// toggle for its matching cylinder, so set both true to use the
+// tether. The boss rests on the table (tangent at Z=0, like the base
+// disc) so it stays low enough to pass underneath the spinner as it
+// rotates through the away-from-mirror position -- see the
+// tether_clearance check below, which keeps base_top_extra tall
+// enough for the spinner to clear it.
+has_tether_dowel = true;
+dowel_diameter    = 6.5;  // actual diameter of the connecting dowel; must match dowel-stand.scad
+hole_clearance    = 0;    // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad
+dowel_hole_depth  = 20;   // how deep the dowel is expected to sit in the hole; must match dowel-stand.scad
+tether_diameter   = 10;   // mm, outer diameter of the horizontal boss, resting tangent to the table (Z=0) like the base disc; kept slim so it clears the spinner without needing a very tall base_top_extra
+tether_length     = dowel_hole_depth + 1; // mm, how far the boss extends beyond the base disc's edge
+tether_clearance  = 2;    // mm, minimum vertical gap kept between the top of the boss and the spinner's bottom face
+
 /* [Preview / debug helpers] */
 stand_color = "DeepSkyBlue";
 
@@ -111,8 +130,21 @@ assert(stop_r_in > 0 && stop_r_in < stop_r_out,
 assert(stop_r_out < base_radius,
     "stop_r_out must be less than base_radius so the away-from-mirror base tab has a full disc under it");
 assert(stop_rise > 0, "stop_rise must be positive");
+assert(tether_diameter > dowel_diameter + hole_clearance,
+    "tether_diameter must be larger than the dowel hole diameter");
+assert(tether_length > dowel_hole_depth,
+    "tether_length should be greater than dowel_hole_depth so the hole doesn't pass all the way through");
+assert(base_radius > tether_diameter / 2,
+    "base_radius is too small for the tether cylinder to embed into the disc");
+assert(!has_tether_dowel ||
+    base_height + base_center_extra + base_top_extra
+        >= tether_diameter + tether_clearance,
+    "base_top_extra is too small for the spinner to clear the tether dowel boss; increase base_top_extra or decrease tether_diameter");
 
 // ===== Derived values =====
+
+dowel_hole_d = dowel_diameter + hole_clearance;
+tether_embed = tether_diameter / 2; // how far the horizontal cylinder is buried into the base disc for a solid fused joint; also its resting height above the table, since it sits tangent to Z=0 like the base disc
 
 // The mirror stand's width matches the lazy-susan base disc's diameter,
 // so the stand reads as a continuation of the disc rather than a
@@ -162,6 +194,26 @@ module lazy_susan_base() {
         translate([0, 0, base_height + base_center_extra])
             cylinder(r = base_top_radius, h = base_top_extra);
     }
+}
+
+// Horizontal cylinder resting on the table (tangent at Z=0, like the
+// base disc itself), embedded into the disc's edge on the side
+// opposite the mirror (-X) and bored with a hole (open at the outward
+// tip) for a dowel. That dowel spans over to the matching cylinder on
+// dowel-stand.scad, holding the two stands a fixed distance apart. Its
+// top stays below the spinner's swept bottom face as it rotates
+// through the away-from-mirror position -- see the tether_clearance
+// check above.
+module tether_post() {
+    translate([-(base_radius - tether_embed), 0, tether_embed])
+        rotate([0, -90, 0])
+            difference() {
+                cylinder(d = tether_diameter, h = tether_embed + tether_length);
+
+                // dowel hole, open at the outward tip
+                translate([0, 0, tether_embed + tether_length - dowel_hole_depth])
+                    cylinder(d = dowel_hole_d, h = dowel_hole_depth + 1);
+            }
 }
 
 // Rotation-stop tabs on the base: two ribs, stop_rise mm tall, rising
@@ -270,6 +322,8 @@ module base_and_mirror_stand() {
         lazy_susan_base();
         if (has_rotation_stop)
             base_stop_tabs();
+        if (has_tether_dowel)
+            tether_post();
         translate([stand_origin_x, stand_origin_y, 0])
             mirror_stand();
     }
@@ -288,13 +342,17 @@ echo(has_rotation_stop
           " mm, ", stop_width, " mm wide -- limits the spinner to 180 degrees",
           " (pointer at the mirror to pointer away from it)")
     : "Rotation stop tabs: disabled");
+echo(has_tether_dowel
+    ? str("Tether dowel cylinder: d=", tether_diameter, " mm, extends ", tether_length,
+          " mm beyond the base disc's edge, away from the mirror")
+    : "Tether dowel cylinder: disabled");
 
 color(stand_color) base_and_mirror_stand();
 
 // ===================================================================
 // Printing notes
 // ===================================================================
-// Print flat side down (Z = 0); the two base stop tabs (if enabled)
-// and the mirror boss all rise from that same flat face, so this
-// needs no supports.
+// Print flat side down (Z = 0); the two base stop tabs (if enabled),
+// the tether dowel boss (if enabled), and the mirror boss all rise
+// from that same flat face, so this needs no supports.
 // ===================================================================
