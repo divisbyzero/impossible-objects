@@ -15,8 +15,8 @@ hole_clearance   = 0;   // added to dowel_diameter for a snug press/slide fit; m
 dowel_hole_depth = 20;    // how deep the dowel is expected to sit in the hole; must match window.scad
 
 /* [Stand base disc (mm)] */
-base_diameter = 100;  // thin disc that sits on the table
-base_height   = 4;    // thickness of the base disc
+base_diameter         = 100;  // thin disc that sits on the table
+base_height_no_tether = 4;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_diameter so the horizontal cylinder sits flush within the full slab -- see base_height below
 
 /* [Stand center post (mm)] */
 post_diameter = 15;   // taller cylinder in the middle, holds the dowel
@@ -33,6 +33,7 @@ $fn = 96;
 // ===== Derived values =====
 dowel_hole_d = dowel_diameter + hole_clearance;
 tether_embed = tether_diameter / 2; // how far the horizontal cylinder is buried into the base disc for a solid fused joint; also its resting height above the table, since it sits tangent to Z=0 like the base disc
+base_height  = has_tether_dowel ? tether_diameter : base_height_no_tether; // full disc thickness; matches the tether cylinder's height when enabled so it sits flush within the slab (top and bottom) instead of poking out above a thin disc
 
 // ===== Checks =====
 assert(base_diameter > post_diameter,
@@ -93,7 +94,7 @@ echo(str("Stand: base d=", base_diameter, " x h=", base_height,
          " mm, post d=", post_diameter, " x h=", post_height, " mm"));
 echo(has_tether_dowel
     ? str("Tether dowel cylinder: d=", tether_diameter, " mm, extends ", tether_length,
-          " mm beyond the base disc's edge")
+          " mm beyond the base disc's edge; base disc thickness raised to match (h=", base_height, " mm)")
     : "Tether dowel cylinder: disabled");
 
 stand();

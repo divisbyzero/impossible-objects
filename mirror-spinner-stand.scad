@@ -39,8 +39,8 @@
 // ===================================================================
 
 /* [Lazy susan base dimensions (mm)] */
-base_height          = 3;
-base_radius          = 110 / 3;  // must match object_width / 3, where object_width matches spinner.scad
+base_height_no_tether = 3;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_diameter so the horizontal cylinder sits flush within the full slab -- see base_height below
+base_radius           = 110 / 3;  // must match object_width / 3, where object_width matches spinner.scad
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
 base_top_extra       = 9;    // top post rises this much above center cylinder; must leave the spinner enough clearance above the tether dowel boss below (see the tether_clearance check)
@@ -117,6 +117,13 @@ tether_clearance  = 2;    // mm, minimum vertical gap kept between the top of th
 stand_color = "DeepSkyBlue";
 
 $fn = 64;
+
+// Computed ahead of the checks below (rather than in the main Derived
+// values section further down) because those checks depend on it: when
+// the tether dowel is enabled, the disc's thickness matches
+// tether_diameter so the horizontal cylinder sits flush within the
+// full slab, top and bottom, instead of poking out above a thin disc.
+base_height = has_tether_dowel ? tether_diameter : base_height_no_tether;
 
 // ===== Checks =====
 assert(base_height > 0 && base_radius > 0,
@@ -344,7 +351,7 @@ echo(has_rotation_stop
     : "Rotation stop tabs: disabled");
 echo(has_tether_dowel
     ? str("Tether dowel cylinder: d=", tether_diameter, " mm, extends ", tether_length,
-          " mm beyond the base disc's edge, away from the mirror")
+          " mm beyond the base disc's edge, away from the mirror; base disc thickness raised to match (h=", base_height, " mm)")
     : "Tether dowel cylinder: disabled");
 
 color(stand_color) base_and_mirror_stand();
