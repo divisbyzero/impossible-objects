@@ -44,7 +44,7 @@ base_radius           = 110 / 3;  // must match object_width / 3, where object_w
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
 base_top_extra       = 6.6;  // top post rises this much above center cylinder
-base_top_radius      = 3.85;
+base_top_radius      = 4.0;
 
 /* [Mirror lean] */
 lean_angle = 86;          // desired angle of the mirror from horizontal (90 = vertical)
@@ -59,6 +59,7 @@ slot_depth = 9.7;                      // vertical depth of the (blind) slot
 // plate_thickness matches base_height, and front_apron is derived from
 // the spinner clearance below (under Derived values) -- see there for
 // why these aren't free parameters here.
+
 back_apron      = 5;   // X: plate material behind the slot
 floor_thickness = 3;    // solid material below the slot floor (within the boss)
 boss_margin     = 5;    // X: extra boss material in front of and behind the slot
@@ -72,9 +73,11 @@ corner_fn = 32;            // smoothness of the rounded corners
 // Radius of the circle swept by the spinner arms' rounded tips (arm_length
 // + arm_width / 2 in spinner.scad); must match spinner.scad's
 // spinner_sweep_radius.
+
 spinner_sweep_radius = 62.5;
 // Extra gap, beyond the bare minimum, between that swept circle and the
 // mirror stand's front edge.
+
 mirror_clearance = 1.5;
 
 /* [Rotation stop] */
@@ -85,6 +88,7 @@ has_rotation_stop = true;  // adds the two tabs that limit spinner rotation to 1
 // aimed directly away from it. All three tabs share the same radial
 // span and width; see the Derived values / module comments below for
 // how they're positioned to interlock.
+
 stop_width = 2;   // mm, tangential width of each stop tab; must match spinner.scad
 stop_r_in  = 20;  // mm, inner radius of the stop tabs; must match spinner.scad
 stop_r_out = 30;  // mm, outer radius of the stop tabs; must match spinner.scad
@@ -100,6 +104,7 @@ stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 // sits fully within it, not breaking through the top or bottom face.
 // Since the hole is bored into the disc rather than protruding above
 // it, it needs no clearance from the spinner regardless of depth.
+
 has_tether_dowel   = true;
 dowel_diameter     = 6.7; // actual diameter of the connecting dowel; must match dowel-stand.scad and window.scad
 hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad and window.scad
@@ -117,6 +122,7 @@ $fn = 64;
 // from tether_hole_margin (see tether_base_height) so the tether hole
 // sits fully within the full slab, top and bottom, instead of
 // breaking through.
+
 dowel_hole_d = dowel_diameter + hole_clearance;
 tether_base_height = 2 * tether_hole_margin + dowel_hole_d; // mm, base thickness needed to leave tether_hole_margin of material above and below the (centered) tether hole
 base_height  = has_tether_dowel ? tether_base_height : base_height_no_tether;
@@ -140,6 +146,7 @@ assert(!has_tether_dowel || dowel_hole_depth > 0,
 // The hole is centered on Y=0, pointing straight at the spinner axis,
 // so its blind end must stay far enough from the origin (by its own
 // radius, plus the center post's) to not break into the center post.
+
 assert(!has_tether_dowel ||
     base_radius - dowel_hole_depth > dowel_hole_d / 2 + base_center_diameter / 2,
     "dowel_hole_depth is too deep and would break into the center post; decrease dowel_hole_depth");
