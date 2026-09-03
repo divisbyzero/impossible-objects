@@ -1,0 +1,37 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "$fn": "64",
+            "back_apron": "13",
+            "base_center_diameter": "10",
+            "base_center_extra": "1",
+            "base_height_no_tether": "3",
+            "base_top_extra": "6.5999999999999996",
+            "base_top_radius": "4",
+            "boss_corner_radius": "3",
+            "boss_margin": "5",
+            "corner_fn": "32",
+            "dowel_diameter": "6.7000000000000002",
+            "dowel_hole_depth": "20",
+            "eps": "0.29999999999999999",
+            "floor_thickness": "3",
+            "has_rotation_stop": "true",
+            "has_tether_dowel": "true",
+            "hole_clearance": "0",
+            "lean_angle": "86",
+            "mirror_base_depth": "6",
+            "mirror_clearance": "1.5",
+            "plate_corner_radius": "3",
+            "slot_depth": "10",
+            "spinner_sweep_radius": "62.5",
+            "stand_color": "DeepSkyBlue",
+            "stand_origin_x": "0",
+            "stop_r_in": "20",
+            "stop_r_out": "30",
+            "stop_rise": "3",
+            "stop_width": "2",
+            "tether_base_height": "10"
+        }
+    }
+}

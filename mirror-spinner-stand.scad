@@ -44,7 +44,7 @@ base_radius           = 110 / 3;  // must match object_width / 3, where object_w
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
 base_top_extra       = 6.6;  // top post rises this much above center cylinder
-base_top_radius      = 4.0;
+base_top_radius      = 3.85;
 
 /* [Mirror] */
 mirror_base_depth = 6;   // front-to-back thickness of the mirror's plastic base
@@ -105,10 +105,10 @@ stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 // Since the hole is bored into the disc rather than protruding above
 // it, it needs no clearance from the spinner regardless of depth.
 has_tether_dowel   = true;
-dowel_diameter     = 6.5; // actual diameter of the connecting dowel; must match dowel-stand.scad and window.scad
+dowel_diameter     = 6.7; // actual diameter of the connecting dowel; must match dowel-stand.scad and window.scad
 hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad and window.scad
 tether_base_height = 10;  // mm, thickness the base disc is made when has_tether_dowel is true (replacing base_height_no_tether), giving the hole enough surrounding material
-dowel_hole_depth   = 20;  // mm, how deep this hole is bored into the base disc from its edge; must match dowel_hole_depth in dowel-stand.scad and window.scad -- it's the one shared parameter that drives dowel-stand.scad's leg-equalizing math, so change it there if you change it here
+dowel_hole_depth   = 20;  // mm, how deep this hole is bored into the base disc from its edge; must match dowel_hole_depth in dowel-stand.scad and window.scad
 
 /* [Preview / debug helpers] */
 stand_color = "DeepSkyBlue";
