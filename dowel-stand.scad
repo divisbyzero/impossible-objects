@@ -37,14 +37,14 @@ dowel_hole_depth = 20;    // how deep the dowel sits in every hole in this desig
 /* [Stand base disc (mm)] */
 base_diameter         = 100;  // diameter across the base's two rounded (semicircular) ends, and its width along the straight sides
 base_height_no_tether = 4;    // thickness of the base when has_tether_dowel is false; when true, the base is instead made as thick as tether_base_height so the tether hole sits fully within it -- see base_height below
-stadium_offset        = 31.85772; // mm, distance between the stadium base's two circle centers (i.e. the length of its straight sides); lengthens the base along +X, where the tether hole opens, so Leg 1 of the leg-equalizing triangle (see header comment) matches Leg 2. Hand-tuned -- currently set to the value that balances the two legs for this design's dowel/window/mirror-stand dimensions.
+stadium_offset        = 0.1; // mm, distance between the stadium base's two circle centers (i.e. the length of its straight sides); lengthens the base along +X, where the tether hole opens, so Leg 1 of the leg-equalizing triangle (see header comment) matches Leg 2. Hand-tuned -- currently set to the value that balances the two legs for this design's dowel/window/mirror-stand dimensions; depends on tether_base_height below, so re-derive if tether_hole_margin (or any other leg-equalizing dimension) changes.
 
 /* [Stand center post (mm)] */
 post_diameter = 15;   // cylinder in the middle, holds the vertical dowel; post_height is derived below
 
 /* [Tether dowel hole (mm)] */
-has_tether_dowel   = true;  // bores a horizontal hole into the base's edge, sized for a second dowel that ties this stand to mirror-spinner-stand.scad at a fixed distance; must match that file's own has_tether_dowel toggle. Also thickens the base (see tether_base_height) so the hole sits fully within it, not breaking through the top or bottom face.
-tether_base_height = post_diameter; // thickness the base is made when has_tether_dowel is true (replacing base_height_no_tether), giving the hole enough surrounding material; defaults to match the vertical post's diameter
+has_tether_dowel   = true;  // bores a horizontal hole into the base's edge, sized for a second dowel that ties this stand to mirror-spinner-stand.scad at a fixed distance; must match that file's own has_tether_dowel toggle. Also thickens the base (see tether_base_height below) so the hole sits fully within it, not breaking through the top or bottom face.
+tether_hole_margin = 3;   // mm, solid material desired above and below the tether dowel hole; tether_base_height below is derived from this plus the hole diameter, so the hole sits centered with this much material on each side. Must match tether_hole_margin in mirror-spinner-stand.scad so the two tether dowel holes (each centered at base_height/2) sit the same height off the table
 post_cap           = 1;     // mm, minimal solid cap left below the vertical hole's blind end once it's sunk as far as it can into the (now thicker) base -- see post_height below
 
 /* [Rendering] */
@@ -52,6 +52,7 @@ $fn = 96;
 
 // ===== Derived values =====
 dowel_hole_d = dowel_diameter + hole_clearance;
+tether_base_height = 2 * tether_hole_margin + dowel_hole_d; // mm, base thickness needed to leave tether_hole_margin of material above and below the (centered) tether hole
 base_height  = has_tether_dowel ? tether_base_height : base_height_no_tether; // full base thickness; thickened when enabled so the tether hole sits fully within the slab (top and bottom) instead of breaking through
 
 // The vertical post only needs to rise as far above the base as the
@@ -73,8 +74,8 @@ assert(post_diameter > dowel_hole_d,
     "post_diameter must be larger than the dowel hole diameter");
 assert(base_height + post_height >= dowel_hole_depth + post_cap,
     "base_height + post_height must be at least dowel_hole_depth + post_cap so the vertical hole doesn't break through the bottom");
-assert(!has_tether_dowel || tether_base_height > dowel_hole_d,
-    "tether_base_height must be larger than the dowel hole diameter so the tether hole doesn't break through the disc's top or bottom face");
+assert(!has_tether_dowel || tether_hole_margin > 0,
+    "tether_hole_margin must be positive so the tether hole doesn't break through the disc's top or bottom face");
 assert(!has_tether_dowel || dowel_hole_depth > 0,
     "dowel_hole_depth must be positive");
 assert(!has_tether_dowel || stadium_offset > 0,

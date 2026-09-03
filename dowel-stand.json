@@ -10,10 +10,19 @@
             "has_tether_dowel": "true",
             "hole_clearance": "0",
             "post_cap": "1",
+            "post_diameter": "15"
+        },
+        "New set 2": {
+            "$fn": "96",
+            "base_diameter": "100",
+            "base_height_no_tether": "4",
+            "dowel_diameter": "6.7000000000000002",
+            "dowel_hole_depth": "20",
+            "has_tether_dowel": "true",
+            "hole_clearance": "0",
+            "post_cap": "1",
             "post_diameter": "15",
-            "window_frame_border": "8",
-            "window_opening_depth": "100",
-            "window_socket_extra": "3"
+            "stadium_offset": "0.10000000000000001"
         }
     }
 }

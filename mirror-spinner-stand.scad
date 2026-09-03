@@ -107,7 +107,7 @@ stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 has_tether_dowel   = true;
 dowel_diameter     = 6.7; // actual diameter of the connecting dowel; must match dowel-stand.scad and window.scad
 hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad and window.scad
-tether_base_height = 10;  // mm, thickness the base disc is made when has_tether_dowel is true (replacing base_height_no_tether), giving the hole enough surrounding material
+tether_hole_margin = 7.5;  // mm, solid material desired above and below the tether dowel hole; tether_base_height below is derived from this plus the hole diameter, so the hole sits centered with this much material on each side. Must match tether_hole_margin in dowel-stand.scad so the two tether dowel holes (each centered at base_height/2) sit the same height off the table
 dowel_hole_depth   = 20;  // mm, how deep this hole is bored into the base disc from its edge; must match dowel_hole_depth in dowel-stand.scad and window.scad
 
 /* [Preview / debug helpers] */
@@ -117,11 +117,13 @@ $fn = 64;
 
 // Computed ahead of the checks below (rather than in the main Derived
 // values section further down) because those checks depend on them:
-// when the tether dowel is enabled, the disc's thickness matches
-// tether_base_height so the tether hole sits fully within the full
-// slab, top and bottom, instead of breaking through.
-base_height  = has_tether_dowel ? tether_base_height : base_height_no_tether;
+// when the tether dowel is enabled, the disc's thickness is derived
+// from tether_hole_margin (see tether_base_height) so the tether hole
+// sits fully within the full slab, top and bottom, instead of
+// breaking through.
 dowel_hole_d = dowel_diameter + hole_clearance;
+tether_base_height = 2 * tether_hole_margin + dowel_hole_d; // mm, base thickness needed to leave tether_hole_margin of material above and below the (centered) tether hole
+base_height  = has_tether_dowel ? tether_base_height : base_height_no_tether;
 
 // ===== Checks =====
 assert(base_height > 0 && base_radius > 0,
@@ -135,8 +137,8 @@ assert(stop_r_in > 0 && stop_r_in < stop_r_out,
 assert(stop_r_out < base_radius,
     "stop_r_out must be less than base_radius so the away-from-mirror base tab has a full disc under it");
 assert(stop_rise > 0, "stop_rise must be positive");
-assert(!has_tether_dowel || tether_base_height > dowel_hole_d,
-    "tether_base_height must be larger than the dowel hole diameter so the tether hole doesn't break through the disc's top or bottom face");
+assert(!has_tether_dowel || tether_hole_margin > 0,
+    "tether_hole_margin must be positive so the tether hole doesn't break through the disc's top or bottom face");
 assert(!has_tether_dowel || dowel_hole_depth > 0,
     "dowel_hole_depth must be positive");
 // The hole is centered on Y=0, pointing straight at the spinner axis,
@@ -206,7 +208,8 @@ module lazy_susan_base() {
 // never collides with the away-from-mirror rotation-stop tab: the tab
 // rises from Z=base_height upward, while the hole sits at the disc's
 // mid-thickness (Z=base_height/2) and stays below Z=base_height by
-// construction (see the tether_base_height > dowel_hole_d check above).
+// construction (tether_base_height is derived from tether_hole_margin
+// plus the hole diameter, so the margin check above guarantees this).
 module tether_hole() {
     overcut = 1; // extra length so the cutter fully clears the disc's outer surface
     translate([-(base_radius + overcut), 0, base_height / 2])
