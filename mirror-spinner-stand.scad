@@ -51,15 +51,15 @@ lean_angle = 86;          // desired angle of the mirror from horizontal (90 = v
 tilt = -(90 - lean_angle); // negative so the slot leans the mirror toward its front edge
 
 /* [Mirror slot] */
-slot_gap   = 6.3; // front-to-back width of the slot
-slot_depth = 10;                      // vertical depth of the (blind) slot
+slot_gap   = 7; // front-to-back width of the slot
+slot_depth = 9.7;                      // vertical depth of the (blind) slot
 
 /* [Mirror stand base] */
 // stand_width matches the lazy-susan base disc's diameter, and
 // plate_thickness matches base_height, and front_apron is derived from
 // the spinner clearance below (under Derived values) -- see there for
 // why these aren't free parameters here.
-back_apron      = 13;   // X: plate material behind the slot
+back_apron      = 5;   // X: plate material behind the slot
 floor_thickness = 3;    // solid material below the slot floor (within the boss)
 boss_margin     = 5;    // X: extra boss material in front of and behind the slot
 
@@ -103,7 +103,7 @@ stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 has_tether_dowel   = true;
 dowel_diameter     = 6.7; // actual diameter of the connecting dowel; must match dowel-stand.scad and window.scad
 hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad and window.scad
-tether_hole_margin = 7.5;  // mm, solid material desired above and below the tether dowel hole; tether_base_height below is derived from this plus the hole diameter, so the hole sits centered with this much material on each side. Must match tether_hole_margin in dowel-stand.scad so the two tether dowel holes (each centered at base_height/2) sit the same height off the table
+tether_hole_margin = 3;  // mm, solid material desired above and below the tether dowel hole; tether_base_height below is derived from this plus the hole diameter, so the hole sits centered with this much material on each side. Must match tether_hole_margin in dowel-stand.scad so the two tether dowel holes (each centered at base_height/2) sit the same height off the table
 dowel_hole_depth   = 20;  // mm, how deep this hole is bored into the base disc from its edge; must match dowel_hole_depth in dowel-stand.scad and window.scad
 
 /* [Preview / debug helpers] */
