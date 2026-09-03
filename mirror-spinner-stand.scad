@@ -46,16 +46,12 @@ base_center_extra    = 1;    // center cylinder rises this much above base_heigh
 base_top_extra       = 6.6;  // top post rises this much above center cylinder
 base_top_radius      = 3.85;
 
-/* [Mirror] */
-mirror_base_depth = 6;   // front-to-back thickness of the mirror's plastic base
-
 /* [Mirror lean] */
 lean_angle = 86;          // desired angle of the mirror from horizontal (90 = vertical)
 tilt = -(90 - lean_angle); // negative so the slot leans the mirror toward its front edge
 
 /* [Mirror slot] */
-eps = 0.3;                            // clearance so the mirror base slides in freely
-slot_gap   = mirror_base_depth + eps; // front-to-back width of the slot
+slot_gap   = 6.3; // front-to-back width of the slot
 slot_depth = 10;                      // vertical depth of the (blind) slot
 
 /* [Mirror stand base] */
