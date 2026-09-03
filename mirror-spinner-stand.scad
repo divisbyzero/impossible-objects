@@ -43,7 +43,7 @@ base_height_no_tether = 3;    // thickness of the base disc when has_tether_dowe
 base_radius           = 110 / 3;  // must match object_width / 3, where object_width matches spinner.scad
 base_center_diameter = 10;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
-base_top_extra       = 6.5;  // top post rises this much above center cylinder
+base_top_extra       = 6.6;  // top post rises this much above center cylinder
 base_top_radius      = 4.0;
 
 /* [Mirror] */
@@ -105,10 +105,10 @@ stop_rise  = 3;   // mm, how far the base's tabs rise above the floor
 // Since the hole is bored into the disc rather than protruding above
 // it, it needs no clearance from the spinner regardless of depth.
 has_tether_dowel   = true;
-dowel_diameter     = 6.5; // actual diameter of the connecting dowel; must match dowel-stand.scad
-hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad
+dowel_diameter     = 6.5; // actual diameter of the connecting dowel; must match dowel-stand.scad and window.scad
+hole_clearance     = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad and window.scad
 tether_base_height = 10;  // mm, thickness the base disc is made when has_tether_dowel is true (replacing base_height_no_tether), giving the hole enough surrounding material
-tether_hole_depth  = 20;  // mm, how deep the horizontal hole is bored into the base disc from its edge
+dowel_hole_depth   = 20;  // mm, how deep this hole is bored into the base disc from its edge; must match dowel_hole_depth in dowel-stand.scad and window.scad -- it's the one shared parameter that drives dowel-stand.scad's leg-equalizing math, so change it there if you change it here
 
 /* [Preview / debug helpers] */
 stand_color = "DeepSkyBlue";
@@ -137,14 +137,14 @@ assert(stop_r_out < base_radius,
 assert(stop_rise > 0, "stop_rise must be positive");
 assert(!has_tether_dowel || tether_base_height > dowel_hole_d,
     "tether_base_height must be larger than the dowel hole diameter so the tether hole doesn't break through the disc's top or bottom face");
-assert(!has_tether_dowel || tether_hole_depth > 0,
-    "tether_hole_depth must be positive");
+assert(!has_tether_dowel || dowel_hole_depth > 0,
+    "dowel_hole_depth must be positive");
 // The hole is centered on Y=0, pointing straight at the spinner axis,
 // so its blind end must stay far enough from the origin (by its own
 // radius, plus the center post's) to not break into the center post.
 assert(!has_tether_dowel ||
-    base_radius - tether_hole_depth > dowel_hole_d / 2 + base_center_diameter / 2,
-    "tether_hole_depth is too deep and would break into the center post; decrease tether_hole_depth");
+    base_radius - dowel_hole_depth > dowel_hole_d / 2 + base_center_diameter / 2,
+    "dowel_hole_depth is too deep and would break into the center post; decrease dowel_hole_depth");
 
 // ===== Derived values =====
 
@@ -211,7 +211,7 @@ module tether_hole() {
     overcut = 1; // extra length so the cutter fully clears the disc's outer surface
     translate([-(base_radius + overcut), 0, base_height / 2])
         rotate([0, 90, 0])
-            cylinder(d = dowel_hole_d, h = tether_hole_depth + overcut);
+            cylinder(d = dowel_hole_d, h = dowel_hole_depth + overcut);
 }
 
 // Rotation-stop tabs on the base: two ribs, stop_rise mm tall, rising
@@ -343,7 +343,7 @@ echo(has_rotation_stop
           " (pointer at the mirror to pointer away from it)")
     : "Rotation stop tabs: disabled");
 echo(has_tether_dowel
-    ? str("Tether dowel hole: d=", dowel_hole_d, " mm, ", tether_hole_depth,
+    ? str("Tether dowel hole: d=", dowel_hole_d, " mm, ", dowel_hole_depth,
           " mm deep, bored into the base disc's edge, away from the mirror; base disc thickness raised to match (h=", base_height, " mm)")
     : "Tether dowel hole: disabled");
 

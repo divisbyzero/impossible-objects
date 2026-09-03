@@ -21,9 +21,9 @@
 // ===================================================================
 
 /* [Dowel (mm)] */
-dowel_diameter   = 6.5;     // actual diameter of the wooden dowel; must match dowel-stand.scad
-hole_clearance   = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad
-dowel_hole_depth = 20;    // how deep the dowel is expected to sit in the hole; must match dowel-stand.scad
+dowel_diameter   = 6.5;     // actual diameter of the wooden dowel; must match dowel-stand.scad and mirror-spinner-stand.scad
+hole_clearance   = 0;   // added to dowel_diameter for a snug press/slide fit; must match dowel-stand.scad and mirror-spinner-stand.scad
+dowel_hole_depth = 20;    // how deep the dowel is expected to sit in the hole; must match dowel-stand.scad and mirror-spinner-stand.scad -- it's the one shared parameter that drives dowel-stand.scad's leg-equalizing math (socket_length below is defined from it), so change it there if you change it here
 
 /* [Window picture-frame opening (mm)] */
 opening_width  = 80;  // inner opening you look through, X (the "picture frame hole")
