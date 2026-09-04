@@ -41,7 +41,7 @@
 /* [Lazy susan base dimensions (mm)] */
 base_height_no_tether = 3;    // thickness of the base disc when has_tether_dowel is false; when true, the disc is instead made as thick as tether_base_height so the tether hole sits fully within it -- see base_height below
 base_radius           = 110 / 3;  // must match object_width / 3, where object_width matches spinner.scad
-base_center_diameter = 10;
+base_center_diameter = 12;
 base_center_extra    = 1;    // center cylinder rises this much above base_height
 base_top_extra       = 6.6;  // top post rises this much above center cylinder
 base_top_radius      = 4.0;
