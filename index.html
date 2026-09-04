@@ -308,7 +308,7 @@
 
     .shape-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
       gap: 10px
     }
 
@@ -363,7 +363,7 @@
     .shape-tile-thumb polyline {
       fill: var(--figure-fill);
       stroke: var(--figure-edge);
-      stroke-width: 5;
+      stroke-width: 2;
       vector-effect: non-scaling-stroke;
       stroke-linejoin: round
     }
@@ -456,32 +456,12 @@
     .panel {
       min-height: 140px;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: 1fr auto;
       overflow: hidden;
       background: linear-gradient(145deg, rgba(25, 47, 51, .9), rgba(10, 22, 25, .95));
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: 0 18px 55px rgba(0, 0, 0, .18)
-    }
-
-    .panel-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 11px 13px;
-      border-bottom: 1px solid var(--line);
-      font: 12px ui-sans-serif, system-ui, sans-serif
-    }
-
-    .panel-head strong {
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase
-    }
-
-    .panel-head span {
-      color: var(--muted)
     }
 
     .preview {
@@ -490,7 +470,8 @@
       display: grid;
       place-items: center;
       padding: 12px;
-      background: repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px), repeating-linear-gradient(90deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px)
+      background: repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px), repeating-linear-gradient(90deg, transparent 0 23px, rgba(255, 255, 255, .025) 24px);
+      cursor: pointer
     }
 
     .preview:before {
@@ -499,6 +480,33 @@
       inset: 12px;
       border: 1px solid rgba(103, 196, 239, .14);
       pointer-events: none
+    }
+
+    .preview:after {
+      content: "\270E  Change Shape";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(4, 10, 12, 0);
+      color: rgba(237, 244, 242, 0);
+      font: 600 13px ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: .02em;
+      transition: background .15s ease, color .15s ease;
+      pointer-events: none
+    }
+
+    .preview:hover:after,
+    .preview:focus-visible:after {
+      background: rgba(4, 10, 12, .55);
+      color: var(--ink)
+    }
+
+    .preview:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px
     }
 
     .preview svg {
@@ -597,21 +605,6 @@
       border-radius: 4px;
       padding: 7px 8px;
       font: 12px ui-sans-serif, system-ui, sans-serif
-    }
-
-    .shape-picker-btn {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      text-align: left
-    }
-
-    .shape-picker-btn:after {
-      content: "▾";
-      color: var(--muted);
-      font-size: 10px
     }
 
     input[type=file] {
@@ -873,12 +866,10 @@
     <main class="workspace" id="workspace">
       <section class="left" id="leftPane">
         <article class="panel back">
-          <div class="panel-head"><strong>Image 2</strong><span id="backName">Car</span></div>
-          <div class="preview" id="backPreview"></div>
+          <div class="preview" id="backPreview" role="button" tabindex="0" aria-haspopup="dialog"
+            aria-label="Change shape for Image 2"></div>
           <div class="controls">
-            <button type="button" class="btn shape-picker-btn" id="backShapeBtn" aria-haspopup="dialog"
-              aria-label="Choose shape for Image 2">Choose Shape&hellip;</button>
-            <div class="upload-hint"><span>or upload your own .svg</span><button type="button"
+            <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button type="button"
                 class="help-link svg-help" aria-label="How to design your own .svg shape"
                 title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="backFile" type="file" accept="image/svg+xml,.svg"
@@ -890,12 +881,10 @@
           </div>
         </article>
         <article class="panel front">
-          <div class="panel-head"><strong>Image 1</strong><span id="frontName">Arrow 3</span></div>
-          <div class="preview" id="frontPreview"></div>
+          <div class="preview" id="frontPreview" role="button" tabindex="0" aria-haspopup="dialog"
+            aria-label="Change shape for Image 1"></div>
           <div class="controls">
-            <button type="button" class="btn shape-picker-btn" id="frontShapeBtn" aria-haspopup="dialog"
-              aria-label="Choose shape for Image 1">Choose Shape&hellip;</button>
-            <div class="upload-hint"><span>or upload your own .svg</span><button type="button"
+            <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button type="button"
                 class="help-link svg-help" aria-label="How to design your own .svg shape"
                 title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
@@ -997,7 +986,7 @@
   <div class="modal-overlay" id="shapePickerModal" hidden>
     <div class="modal shapes" role="dialog" aria-modal="true" aria-labelledby="shapePickerTitle">
       <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <h2 id="shapePickerTitle">Choose a Shape</h2>
+        <h2 id="shapePickerTitle">Change Shape</h2>
         <button type="button" class="modal-close" id="shapePickerClose" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
@@ -1045,7 +1034,8 @@
     function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; svg.innerHTML = data.previewMarkup || data.markup; document.body.appendChild(svg); try { const b = svg.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
     function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.previewMarkup || data.markup}</svg>` }
     function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); return parts.join(' ') }
-    function show(which, data, name) { state[which] = data; state.selectedName[which] = name; state.transform[which] = { flipH: false, flipV: false }; $(`${which}FlipH`).checked = false; $(`${which}FlipV`).checked = false; state.camera = { ...DEFAULT_CAMERA }; state.drag = null; const svg = $(`${which}Preview`); svg.innerHTML = preview(data); svg.firstElementChild.style.transform = previewTransformCSS(which); svg.firstElementChild.style.transformOrigin = 'center'; $(`${which}Name`).textContent = name.replace(/\.svg$/i, ''); build() }
+    function shapeLabel(which) { return (state.selectedName[which] || '').replace(/\.svg$/i, '') }
+    function show(which, data, name) { state[which] = data; state.selectedName[which] = name; state.transform[which] = { flipH: false, flipV: false }; $(`${which}FlipH`).checked = false; $(`${which}FlipV`).checked = false; state.camera = { ...DEFAULT_CAMERA }; state.drag = null; const svg = $(`${which}Preview`); svg.innerHTML = preview(data); svg.firstElementChild.style.transform = previewTransformCSS(which); svg.firstElementChild.style.transformOrigin = 'center'; build() }
     function parse(text) {
       const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
       if (doc.querySelector('parsererror')) throw Error('Could not parse this file as SVG');
@@ -1398,7 +1388,7 @@ if (add_legs) legs_for_curve(curve_points_mm);
 `;
     function scadCurvePoints(mesh) { const rows = []; for (let i = 0; i < mesh.length; i += 3) rows.push(`    [${mesh[i].toFixed(6)}, ${mesh[i + 1].toFixed(6)}, ${mesh[i + 2].toFixed(6)}]`); return rows.join(',\n') }
     function generateScad(params) {
-      return `// Impossible object: ${$('frontName').textContent} (front) + ${$('backName').textContent} (back)
+      return `// Impossible object: ${shapeLabel('front')} (front) + ${shapeLabel('back')} (back)
 // Exported from the Impossible Objects web app.
 // Tweak the parameters below directly, or via Window > Customizer in OpenSCAD.
 // Press F5 to preview, F6 to render, then export as STL for printing.
@@ -1441,7 +1431,7 @@ curve_points_mm = [
 ];
 ${SCAD_MODULES}`
     }
-    function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name($('frontName').textContent)}-${name($('backName').textContent)}.scad` }
+    function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name(shapeLabel('front'))}-${name(shapeLabel('back'))}.scad` }
     function toggleLegFields() { const on = $('scadAddLegs').checked; for (const id of ['scadLegWidth', 'scadLegExtension', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on }
     function openExportModal() { if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return } $('scadOverallWidth').value = Number($('widthSlider').value); $('scadRibbonThickness').value = Number($('heightSlider').value); $('scadWallThickness').value = Number($('thicknessSlider').value); $('scadAddLegs').checked = true; $('scadLegWidth').value = 6; $('scadLegExtension').value = 0; $('scadFootHeight').value = 2; $('scadFootWidth').value = 7; toggleLegFields(); $('exportModal').hidden = false }
     function closeExportModal() { $('exportModal').hidden = true }
@@ -1513,7 +1503,7 @@ ${SCAD_MODULES}`
       $('paneLabelBack').textContent = mirrorMode ? 'Rear Mirror View' : 'Rear View';
       $('legendBack').textContent = mirrorMode ? 'Drag horizontally to rotate · scroll or pinch to zoom' : 'Drag horizontally to rotate · scroll or pinch to zoom';
     }
-    function init() { rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(CLEAR_COLOR, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup, axisGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); $('frontShapeBtn').onclick = () => openShapePicker('front'); $('backShapeBtn').onclick = () => openShapePicker('back'); $('shapePickerClose').onclick = closeShapePicker; $('shapePickerModal').onclick = e => { if (e.target === $('shapePickerModal')) closeShapePicker() }; $('shapePickerSearch').oninput = e => filterShapePicker(e.target.value); $('shapePickerGrid').onclick = e => { const tile = e.target.closest('.shape-tile'); if (!tile || !pickerWhich) return; choose(pickerWhich, tile.dataset.name); closeShapePicker() }; $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); setViewMode(state.viewMode); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; $('instructionsBtn').onclick = openInstructionsModal; document.querySelectorAll('.svg-help').forEach(btn => btn.onclick = () => openHelpModal('svg-shape')); $('aboutMathLink').onclick = e => { e.preventDefault(); openHelpModal('math-behind', 'The math behind the illusion') }; $('instructionsClose').onclick = closeInstructionsModal; $('instructionsModal').onclick = e => { if (e.target === $('instructionsModal')) closeInstructionsModal() }; $('helpClose').onclick = closeHelpModal; $('helpModal').onclick = e => { if (e.target === $('helpModal')) closeHelpModal() }; document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('exportModal').hidden) closeExportModal(); if (!$('instructionsModal').hidden) closeInstructionsModal(); if (!$('helpModal').hidden) closeHelpModal(); if (!$('shapePickerModal').hidden) closeShapePicker() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function init() { rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(CLEAR_COLOR, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup, axisGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); for (const which of ['front', 'back']) { const preview = $(`${which}Preview`); preview.onclick = () => openShapePicker(which); preview.onkeydown = e => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); openShapePicker(which) } } $('shapePickerClose').onclick = closeShapePicker; $('shapePickerModal').onclick = e => { if (e.target === $('shapePickerModal')) closeShapePicker() }; $('shapePickerSearch').oninput = e => filterShapePicker(e.target.value); $('shapePickerGrid').onclick = e => { const tile = e.target.closest('.shape-tile'); if (!tile || !pickerWhich) return; choose(pickerWhich, tile.dataset.name); closeShapePicker() }; $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); setViewMode(state.viewMode); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; $('instructionsBtn').onclick = openInstructionsModal; document.querySelectorAll('.svg-help').forEach(btn => btn.onclick = () => openHelpModal('svg-shape')); $('aboutMathLink').onclick = e => { e.preventDefault(); openHelpModal('math-behind', 'The math behind the illusion') }; $('instructionsClose').onclick = closeInstructionsModal; $('instructionsModal').onclick = e => { if (e.target === $('instructionsModal')) closeInstructionsModal() }; $('helpClose').onclick = closeHelpModal; $('helpModal').onclick = e => { if (e.target === $('helpModal')) closeHelpModal() }; document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('exportModal').hidden) closeExportModal(); if (!$('instructionsModal').hidden) closeInstructionsModal(); if (!$('helpModal').hidden) closeHelpModal(); if (!$('shapePickerModal').hidden) closeShapePicker() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
