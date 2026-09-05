@@ -555,26 +555,42 @@
       position: absolute;
       right: 10px;
       bottom: 10px;
-      width: 26px;
-      height: 26px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: rgba(11, 24, 27, .78);
-      border: 1px solid rgba(103, 196, 239, .35);
-      color: var(--muted);
-      font-size: 13px;
+      width: max-content;
+      height: auto;
+      max-height: 28px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px 7px 10px;
+      border-radius: 999px;
+      background: rgba(11, 24, 27, .92);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font: 600 12px ui-sans-serif, system-ui, sans-serif;
       line-height: 1;
-      opacity: .75;
-      transition: opacity .15s ease, color .15s ease, border-color .15s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+      transition: transform .15s ease, background .15s ease;
       pointer-events: none
+    }
+
+    .preview .preview-badge svg {
+      width: 14px;
+      height: 14px;
+      max-height: none;
+      flex: none;
+      filter: none
     }
 
     .preview:hover .preview-badge,
     .preview:focus-visible .preview-badge {
-      opacity: 1;
-      color: var(--accent);
-      border-color: var(--accent)
+      background: var(--accent);
+      color: #06211d;
+      transform: scale(1.05)
+    }
+
+    .preview:hover .preview-badge svg,
+    .preview:focus-visible .preview-badge svg {
+      color: #06211d
     }
 
     .preview svg {
@@ -967,7 +983,10 @@
           <div class="preview" id="backPreview" role="button" tabindex="0" aria-haspopup="dialog"
             aria-label="Change shape for Image 2">
             <div class="preview-svg" id="backPreviewSvg"></div>
-            <span class="preview-badge" aria-hidden="true">&#9998;</span>
+            <span class="preview-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              </svg>Change</span>
           </div>
           <div class="controls">
             <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button type="button"
@@ -985,7 +1004,10 @@
           <div class="preview" id="frontPreview" role="button" tabindex="0" aria-haspopup="dialog"
             aria-label="Change shape for Image 1">
             <div class="preview-svg" id="frontPreviewSvg"></div>
-            <span class="preview-badge" aria-hidden="true">&#9998;</span>
+            <span class="preview-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              </svg>Change</span>
           </div>
           <div class="controls">
             <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button type="button"
