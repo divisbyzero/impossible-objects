@@ -707,6 +707,14 @@
       gap: 12px
     }
 
+    .stages.front-only {
+      grid-template-rows: minmax(min-content, auto) minmax(160px, 1fr)
+    }
+
+    .stages.front-only #stageBack {
+      display: none
+    }
+
     .stage {
       min-width: 0;
       min-height: 160px;
@@ -919,6 +927,10 @@
         gap: 10px
       }
 
+      .stages.front-only {
+        grid-template-rows: auto 1fr
+      }
+
       .controls {
         align-items: stretch;
         flex-direction: column;
@@ -1025,7 +1037,7 @@
           aria-label="Swap Image 1 and Image 2">&#8645;</button>
       </section>
       <div class="divider" id="divider" aria-label="Resize panels"></div>
-      <section class="stages">
+      <section class="stages" id="stagesSection">
         <div class="stage" id="stageBack">
           <canvas id="sceneBack" class="scene-canvas"
             aria-label="Interactive 3D impossible object preview, back view"></canvas>
@@ -1036,6 +1048,7 @@
           <div class="view-toggle" role="group" aria-label="3D view mode">
             <button type="button" id="freeViewBtn" aria-pressed="false">Front/Rear view</button>
             <button type="button" id="mirrorViewBtn" class="active" aria-pressed="true">Front/Mirror view</button>
+            <button type="button" id="frontOnlyBtn" aria-pressed="false">Front only</button>
           </div>
           <div class="range-control"><label for="sampleSlider">Sample Points</label><input id="sampleSlider"
               type="range" min="32" max="512" step="8" value="248" aria-label="Mesh samples"><output
@@ -1141,6 +1154,11 @@
     function ribbonDropMM(overallHeightMM, thicknessMM) { return Math.max(overallHeightMM - thicknessMM, 0) }
     function normalizedHeight() { return ribbonDropMM(state.heightMM, state.thicknessMM) / state.widthMM * CURVE_SAMPLE_SPAN }
     const DEFAULT_CAMERA = { distance: 1.4, zoom: 1.5, azimuth: Math.PI, elevation: Math.PI / 4 };
+    const FRONT_ONLY_ZOOM_FACTOR = 1.6;
+    function resetCamera() {
+      state.camera = { ...DEFAULT_CAMERA };
+      if (state.viewMode === 'front') { state.preFrontOnlyZoom = DEFAULT_CAMERA.zoom; state.camera.zoom *= FRONT_ONLY_ZOOM_FACTOR }
+    }
     const $ = id => document.getElementById(id), sceneFront = $('sceneFront'), sceneBack = $('sceneBack');
     let rendererFront, rendererBack, cameraFront, cameraBack, world, modelGroup, meshGroup, axisGroup, resizeObserver, pickerWhich = null, shapePickerBuilt = false;
     const SHAPE_SELECTOR = 'path, circle, rect, ellipse, line, polygon, polyline';
@@ -1163,7 +1181,7 @@
     function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.previewMarkup || data.markup}</svg>` }
     function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); return parts.join(' ') }
     function shapeLabel(which) { return (state.selectedName[which] || '').replace(/\.svg$/i, '') }
-    function show(which, data, name) { state[which] = data; state.selectedName[which] = name; state.transform[which] = { flipH: false, flipV: false }; $(`${which}FlipH`).checked = false; $(`${which}FlipV`).checked = false; state.camera = { ...DEFAULT_CAMERA }; state.drag = null; const slot = $(`${which}PreviewSvg`); slot.innerHTML = preview(data); slot.firstElementChild.style.transform = previewTransformCSS(which); slot.firstElementChild.style.transformOrigin = 'center'; build() }
+    function show(which, data, name) { state[which] = data; state.selectedName[which] = name; state.transform[which] = { flipH: false, flipV: false }; $(`${which}FlipH`).checked = false; $(`${which}FlipV`).checked = false; resetCamera(); state.drag = null; const slot = $(`${which}PreviewSvg`); slot.innerHTML = preview(data); slot.firstElementChild.style.transform = previewTransformCSS(which); slot.firstElementChild.style.transformOrigin = 'center'; build() }
     // Swaps which shape is Image 1 vs Image 2 (each shape's own flip settings travel with
     // it), redrawing both previews from the already-loaded state without refetching either SVG.
     function swapShapes() {
@@ -1639,16 +1657,23 @@ ${SCAD_MODULES}`
     }
     const CLEAR_COLOR = 0x081417;
     function setViewMode(mode) {
-      state.viewMode = mode; state.drag = null;
+      const wasFrontOnly = state.viewMode === 'front';
+      const frontOnly = mode === 'front';
+      state.viewMode = mode; state.drag = null; state.pinch = null;
       const mirrorMode = mode === 'mirror';
-      $('freeViewBtn').classList.toggle('active', !mirrorMode); $('freeViewBtn').setAttribute('aria-pressed', String(!mirrorMode));
+      $('freeViewBtn').classList.toggle('active', mode === 'free'); $('freeViewBtn').setAttribute('aria-pressed', String(mode === 'free'));
       $('mirrorViewBtn').classList.toggle('active', mirrorMode); $('mirrorViewBtn').setAttribute('aria-pressed', String(mirrorMode));
+      $('frontOnlyBtn').classList.toggle('active', frontOnly); $('frontOnlyBtn').setAttribute('aria-pressed', String(frontOnly));
       sceneFront.classList.remove('dragging'); sceneBack.classList.remove('dragging');
       sceneBack.classList.toggle('mirrored', mirrorMode);
       $('paneLabelBack').textContent = mirrorMode ? 'Rear Mirror View' : 'Rear View';
-      $('legendBack').textContent = mirrorMode ? 'Drag horizontally to rotate · scroll or pinch to zoom' : 'Drag horizontally to rotate · scroll or pinch to zoom';
+      $('legendBack').textContent = 'Drag horizontally to rotate · scroll or pinch to zoom';
+      $('stagesSection').classList.toggle('front-only', frontOnly);
+      if (frontOnly && !wasFrontOnly) { state.preFrontOnlyZoom = state.camera.zoom; state.camera.zoom = state.preFrontOnlyZoom * FRONT_ONLY_ZOOM_FACTOR }
+      else if (!frontOnly && wasFrontOnly && state.preFrontOnlyZoom) { state.camera.zoom = state.preFrontOnlyZoom; state.preFrontOnlyZoom = null }
+      requestAnimationFrame(resize)
     }
-    function init() { rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(CLEAR_COLOR, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup, axisGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); for (const which of ['front', 'back']) { const preview = $(`${which}Preview`); preview.onclick = () => openShapePicker(which); preview.onkeydown = e => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); openShapePicker(which) } } $('swapBtn').onclick = swapShapes; $('shapePickerClose').onclick = closeShapePicker; $('shapePickerModal').onclick = e => { if (e.target === $('shapePickerModal')) closeShapePicker() }; $('shapePickerSearch').oninput = e => filterShapePicker(e.target.value); $('shapePickerGrid').onclick = e => { const tile = e.target.closest('.shape-tile'); if (!tile || !pickerWhich) return; choose(pickerWhich, tile.dataset.name); closeShapePicker() }; $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { state.camera = { ...DEFAULT_CAMERA }; state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); setViewMode(state.viewMode); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; $('instructionsBtn').onclick = openInstructionsModal; document.querySelectorAll('.svg-help').forEach(btn => btn.onclick = () => openHelpModal('svg-shape')); $('aboutMathLink').onclick = e => { e.preventDefault(); openHelpModal('math-behind', 'The math behind the illusion') }; $('instructionsClose').onclick = closeInstructionsModal; $('instructionsModal').onclick = e => { if (e.target === $('instructionsModal')) closeInstructionsModal() }; $('helpClose').onclick = closeHelpModal; $('helpModal').onclick = e => { if (e.target === $('helpModal')) closeHelpModal() }; document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('exportModal').hidden) closeExportModal(); if (!$('instructionsModal').hidden) closeInstructionsModal(); if (!$('helpModal').hidden) closeHelpModal(); if (!$('shapePickerModal').hidden) closeShapePicker() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
+    function init() { rendererFront = new THREE.WebGLRenderer({ canvas: sceneFront, antialias: true, alpha: false }); rendererBack = new THREE.WebGLRenderer({ canvas: sceneBack, antialias: true, alpha: false }); for (const r of [rendererFront, rendererBack]) { r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(CLEAR_COLOR, 1); r.shadowMap.enabled = true } world = new THREE.Scene(); world.fog = new THREE.Fog(0x081417, 8, 18); meshGroup = new THREE.Group(); axisGroup = new THREE.Group(); modelGroup = new THREE.Group(); modelGroup.add(meshGroup, axisGroup); world.add(modelGroup); world.add(new THREE.AmbientLight(0xb8d8d2, .8), new THREE.HemisphereLight(0xc9ffff, 0x263b3c, 3.2)); const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(2, 3, 4); world.add(light); cameraFront = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraFront.up.set(0, 0, 1); cameraBack = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100); cameraBack.up.set(0, 0, 1); resizeObserver = new ResizeObserver(resize); resizeObserver.observe(sceneFront); resizeObserver.observe(sceneBack); for (const which of ['front', 'back']) { const preview = $(`${which}Preview`); preview.onclick = () => openShapePicker(which); preview.onkeydown = e => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); openShapePicker(which) } } $('swapBtn').onclick = swapShapes; $('shapePickerClose').onclick = closeShapePicker; $('shapePickerModal').onclick = e => { if (e.target === $('shapePickerModal')) closeShapePicker() }; $('shapePickerSearch').oninput = e => filterShapePicker(e.target.value); $('shapePickerGrid').onclick = e => { const tile = e.target.closest('.shape-tile'); if (!tile || !pickerWhich) return; choose(pickerWhich, tile.dataset.name); closeShapePicker() }; $('frontFile').onchange = e => upload('front', e.target.files[0]); $('backFile').onchange = e => upload('back', e.target.files[0]); $('widthSlider').value = state.widthMM; $('heightSlider').value = state.heightMM; $('thicknessSlider').value = state.thicknessMM; $('widthValue').value = `${state.widthMM} mm`; $('heightValue').value = `${state.heightMM} mm`; $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; $('sampleSlider').oninput = e => { state.samples = Number(e.target.value); $('sampleValue').value = state.samples; build() }; $('widthSlider').oninput = e => { state.widthMM = Number(e.target.value); $('widthValue').value = `${state.widthMM} mm`; rebuildGeometry() }; $('heightSlider').oninput = e => { state.heightMM = Number(e.target.value); $('heightValue').value = `${state.heightMM} mm`; rebuildGeometry() }; $('thicknessSlider').oninput = e => { state.thicknessMM = Number(e.target.value); $('thicknessValue').value = `${state.thicknessMM.toFixed(1)} mm`; rebuildGeometry() }; for (const which of ['front', 'back']) for (const [id, key] of [['FlipH', 'flipH'], ['FlipV', 'flipV']]) $(`${which}${id}`).onchange = e => { state.transform[which][key] = e.target.checked; if (state[which]) { const svg = $(`${which}Preview`).querySelector('svg'); if (svg) { svg.style.transform = previewTransformCSS(which); svg.style.transformOrigin = 'center' } } build() }; wireOrbit(sceneFront); wireOrbit(sceneBack); $('resetViewBtn').onclick = () => { resetCamera(); state.drag = null }; $('freeViewBtn').onclick = () => setViewMode('free'); $('mirrorViewBtn').onclick = () => setViewMode('mirror'); $('frontOnlyBtn').onclick = () => setViewMode('front'); setViewMode(state.viewMode); $('exportBtn').onclick = openExportModal; $('exportCancel').onclick = closeExportModal; $('exportDownload').onclick = downloadScad; $('scadAddLegs').onchange = toggleLegFields; $('exportModal').onclick = e => { if (e.target === $('exportModal')) closeExportModal() }; $('instructionsBtn').onclick = openInstructionsModal; document.querySelectorAll('.svg-help').forEach(btn => btn.onclick = () => openHelpModal('svg-shape')); $('aboutMathLink').onclick = e => { e.preventDefault(); openHelpModal('math-behind', 'The math behind the illusion') }; $('instructionsClose').onclick = closeInstructionsModal; $('instructionsModal').onclick = e => { if (e.target === $('instructionsModal')) closeInstructionsModal() }; $('helpClose').onclick = closeHelpModal; $('helpModal').onclick = e => { if (e.target === $('helpModal')) closeHelpModal() }; document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('exportModal').hidden) closeExportModal(); if (!$('instructionsModal').hidden) closeInstructionsModal(); if (!$('helpModal').hidden) closeHelpModal(); if (!$('shapePickerModal').hidden) closeShapePicker() }); choose('front', 'Circle.svg'); choose('back', 'Square (Diamond).svg'); render() }
     try { init() } catch (error) { $('status').textContent = 'WEBGL UNAVAILABLE'; document.querySelector('.stages').replaceWith(Object.assign(document.createElement('div'), { className: 'fallback', textContent: 'This browser could not start WebGL. Please use a recent browser with hardware acceleration enabled.' })) }
   </script>
 </body>
