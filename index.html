@@ -983,14 +983,14 @@
           <div class="preview" id="backPreview" role="button" tabindex="0" aria-haspopup="dialog"
             aria-label="Change shape for Image 2">
             <div class="preview-svg" id="backPreviewSvg"></div>
-            <span class="preview-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <span class="preview-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
               </svg>Change</span>
           </div>
           <div class="controls">
-            <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button type="button"
-                class="help-link svg-help" aria-label="How to design your own .svg shape"
+            <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button
+                type="button" class="help-link svg-help" aria-label="How to design your own .svg shape"
                 title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="backFile" type="file" accept="image/svg+xml,.svg"
               aria-label="Upload Image 2 SVG">
@@ -1004,14 +1004,14 @@
           <div class="preview" id="frontPreview" role="button" tabindex="0" aria-haspopup="dialog"
             aria-label="Change shape for Image 1">
             <div class="preview-svg" id="frontPreviewSvg"></div>
-            <span class="preview-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <span class="preview-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
               </svg>Change</span>
           </div>
           <div class="controls">
-            <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button type="button"
-                class="help-link svg-help" aria-label="How to design your own .svg shape"
+            <div class="upload-hint"><span>Click image to change shape or upload your own .svg</span><button
+                type="button" class="help-link svg-help" aria-label="How to design your own .svg shape"
                 title="How to design your own .svg shape">?</button></div>
             <input class="file-control" id="frontFile" type="file" accept="image/svg+xml,.svg"
               aria-label="Upload Image 1 SVG">
@@ -1127,7 +1127,7 @@
   </div>
   <script type="module">
     import * as THREE from './three.module.js';
-    const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left).svg', 'Arrow (up).svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Circles (two).svg', 'Circles (three).svg', 'Circles (four).svg', 'Duck.svg', 'Egg.svg', 'Fire.svg', 'Foot.svg', 'Hand.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Quill.svg', 'Rabbit.svg', 'Sneaker.svg', 'Shield.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Sword.svg', 'Thumbs Up (Down).svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
+    const SVG_FILES = ['Arrow (curved).svg', 'Arrow (left).svg', 'Arrow (up).svg', 'Baseball hat.svg', 'Batman Logo.svg', 'Car.svg', 'Chick.svg', 'Chicken.svg', 'Circle.svg', 'Circles (two).svg', 'Circles (three).svg', 'Circles (four).svg', 'Cowboy boot.svg', 'Cowboy hat.svg', 'Duck.svg', 'Egg.svg', 'Fire.svg', 'Foot.svg', 'Hand.svg', 'Heart.svg', 'Hexagon.svg', 'Infinity.svg', 'Pentagon.svg', 'Quill.svg', 'Rabbit.svg', 'Sneaker.svg', 'Shield.svg', 'Square.svg', 'Square (Diamond).svg', 'Star.svg', 'Sword.svg', 'Thumbs Up (Down).svg', 'Triangle.svg', 'Turtle.svg', 'Water Drop.svg'];
     const DEMOS = { 'Arrow 3.svg': { viewBox: '0 0 612 792', markup: '<path d="M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z"/>' }, 'Car.svg': { viewBox: '0 0 612 792', markup: '<path d="M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z"/>' } };
     // widthMM/heightMM/thicknessMM are the real-world (mm) values the user sets; the 3D
     // preview stays in the app's normalized coordinate space, so heightMM is converted via
