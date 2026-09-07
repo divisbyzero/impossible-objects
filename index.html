@@ -1265,7 +1265,7 @@
       filterShapePicker('');
       markSelectedTile();
       $('shapePickerModal').hidden = false;
-      $('shapePickerSearch').focus();
+      if (!matchMedia('(pointer: coarse)').matches) $('shapePickerSearch').focus();
     }
     function closeShapePicker() { $('shapePickerModal').hidden = true; pickerWhich = null }
     function sample(data, count = 248, baseRotate180 = false, userFlags = {}) {
