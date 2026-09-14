@@ -1573,11 +1573,26 @@ parametric_ribbon(curve_points_mm);
 if (add_legs) legs_for_curve(curve_points_mm);
 `;
     const SCAD_VERTICAL_TAIL = `
-// Every segment of the closed curve that crosses x = x0, as [segment index,
-// fraction along that segment, the crossing point itself]. A simple closed
-// curve normally crosses any given x twice - once on its "upper" arc, once
-// on its "lower" arc - so callers pick between hits by z rather than assuming
-// there's only one.
+// The app's Vertical Mode display rotates the finished ribbon mesh (built in
+// this same curve_points_mm frame, band drop and all) 90 deg about the
+// x-axis then 180 deg about the z-axis - see VERTICAL_MODE_QUATERNION. The
+// ribbon below is rotated the same way, as a native rotate() wrapping the
+// already-built solid, for the same reason the app rotates the finished mesh
+// rather than the input curve: the ribbon's band drop (ribbon_height) has to
+// happen in curve_points_mm's own frame first, or it ends up dropping along
+// the wrong final axis (vertically instead of horizontally). The leg and
+// foot, by contrast, need to be built directly in the final, already-rotated
+// frame (a leg has to drop along the true, final z-axis to stand on a print
+// bed) - so curve_points_mm_rotated below applies that same rotation to the
+// curve data itself, for base_for_curve to use.
+function rotate_x90_z180(p) = [-p[0], p[2], p[1]];
+curve_points_mm_rotated = [for (p = curve_points_mm) rotate_x90_z180(p)];
+
+// Every segment of the (already-rotated, final-frame) closed curve that
+// crosses x = x0, as [segment index, fraction along that segment, the
+// crossing point itself]. A simple closed curve normally crosses any given x
+// twice - once on its "upper" arc, once on its "lower" arc - so callers pick
+// between hits by z rather than assuming there's only one.
 function x_crossings(points, x0) =
     [
         for (i = [0 : len(points) - 2])
@@ -1609,16 +1624,24 @@ function lowest_x_crossing(points, x0) =
 // but with foot_width and foot_length both user-adjustable so the foot can
 // be made mostly circular (the two equal) with only a slight point, rather
 // than the sharp fixed-ratio almond used for the horizontal marker leg.
+// Takes the already-rotated curve (curve_points_mm_rotated), since the leg
+// has to be positioned and dropped in the same final frame the ribbon ends
+// up in after its own rotate() below, not the pre-rotation frame the ribbon
+// is built in.
 module base_for_curve(points) {
     hit = lowest_x_crossing(points, 0);
     i = hit[0];
     t = hit[1];
     p = hit[2];
-    // floor_z is the figure's actual lowest reach (the ribbon's own rounded-
-    // cap drop already subtracted, see its definition above) - so a default
-    // leg_extension of 0 lands the foot's bottom exactly level with that,
-    // no gap and no overlap, per how it's meant to look standing.
-    leg_bottom = floor_z - leg_extension;
+    // Unlike legs_for_curve's floor_z, no ribbon_height term belongs here:
+    // after rotation the ribbon's band drop lands entirely along the final
+    // y-axis (see the rotate() comment above), not z, so top and bottom rail
+    // share the same final z at any given curve point - only the sweep
+    // sphere's radius (wall_thickness / 2) extends the surface any lower.
+    // A default leg_extension of 0 lands the foot's bottom exactly level
+    // with that, no gap and no overlap, per how it's meant to look standing.
+    floor_z_final = min([for (pt = points) pt[2]]) - wall_thickness / 2;
+    leg_bottom = floor_z_final - leg_extension;
     // See legs_for_curve for why the leg is clipped to z >= leg_bottom and
     // why wall_thickness is subtracted from leg_width here first.
     clip_span = overall_width * 4;
@@ -1636,19 +1659,13 @@ module base_for_curve(points) {
             almond_2d(foot_width, foot_length);
 }
 
-parametric_ribbon(curve_points_mm);
-if (add_base) base_for_curve(curve_points_mm);
+rotate([0, 0, 180]) rotate([90, 0, 0])
+    parametric_ribbon(curve_points_mm);
+if (add_base) base_for_curve(curve_points_mm_rotated);
 `;
-    // rotateForVertical applies the same 90deg-x-then-180deg-z rotation the app's Vertical
-    // Mode display applies to the ribbon (see VERTICAL_MODE_QUATERNION), so the exported
-    // curve matches what's on screen: (x, y, z) -> (-x, z, y).
-    function scadCurvePoints(mesh, rotateForVertical) {
+    function scadCurvePoints(mesh) {
       const rows = [];
-      for (let i = 0; i < mesh.length; i += 3) {
-        const x = mesh[i], y = mesh[i + 1], z = mesh[i + 2];
-        const [ox, oy, oz] = rotateForVertical ? [-x, z, y] : [x, y, z];
-        rows.push(`    [${ox.toFixed(6)}, ${oy.toFixed(6)}, ${oz.toFixed(6)}]`);
-      }
+      for (let i = 0; i < mesh.length; i += 3) rows.push(`    [${mesh[i].toFixed(6)}, ${mesh[i + 1].toFixed(6)}, ${mesh[i + 2].toFixed(6)}]`);
       return rows.join(',\n');
     }
     function generateScad(params) {
@@ -1692,7 +1709,7 @@ ${legsSection}
 
 /* [Hidden] */
 curve_points = [
-${scadCurvePoints(state.mesh, vertical)}
+${scadCurvePoints(state.mesh)}
 ];
 
 // The web app always samples the curve across a fixed dimensionless x-span
