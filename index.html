@@ -1102,6 +1102,7 @@
             min="0"></label>
         <label class="field" id="scadFootArmLengthField"><span>Foot arm length (mm)</span><input type="number" id="scadFootArmLength" step="0.5"
             min="0.5"></label>
+        <label class="field row" id="scadFlipFootField"><input type="checkbox" id="scadFlipFoot"><span>Point foot the other way</span></label>
       </div>
       <div class="modal-foot">
         <button type="button" class="btn" id="exportCancel">Cancel</button>
@@ -1619,18 +1620,33 @@ function lowest_x_crossing(points, x0) =
 // a shared center at the same 90/210/330 degree layout as Horizontal Mode's
 // three legs, so this one consolidated foot fits the same Y-shaped slot on
 // the spinner mount that those three separate feet were designed for. Two
-// arms (210, 330) end rounded; the 90-degree arm (the same +y direction the
-// horizontal marker leg's almond foot points) tapers to a point instead -
-// a hull() from the full-width base circle down to a near-zero-radius tip,
-// the simplest way to get a smooth, symmetric point. All three arms share
-// the same length, per how a Y-slot's prongs are evenly matched.
+// arms (210, 330) end rounded, full width along their whole length. The
+// 90-degree arm (the same +y direction the horizontal marker leg's almond
+// foot points, and flippable to -y via flip_foot for balance) is also full
+// width for most of its length, only tapering to a point over its last
+// point_len - a half of the same almond_2d shape, at the same sqrt(3):1
+// length-to-width proportions, that the horizontal marker foot uses whole.
+// All three arms measure the same overall length, per how a Y-slot's prongs
+// are evenly matched.
 module y_foot_2d(arm_length, width) {
+    point_len = sqrt(3) * width / 2;
+    shaft_len = max(arm_length - point_len, 0);
+    module capsule(len) {
+        hull() { circle(d = width, $fn = 50); translate([0, len]) circle(d = width, $fn = 50); }
+    }
+    module pointed_arm() {
+        union() {
+            if (shaft_len > 0) capsule(shaft_len);
+            translate([0, shaft_len])
+                intersection() {
+                    almond_2d(width, 2 * point_len);
+                    translate([-width, 0]) square([2 * width, point_len + 0.01]);
+                }
+        }
+    }
     for (a = [90, 210, 330])
         rotate(a - 90)
-            if (a == 90)
-                hull() { circle(d = width, $fn = 50); translate([0, arm_length]) circle(d = 0.01, $fn = 12); }
-            else
-                hull() { circle(d = width, $fn = 50); translate([0, arm_length]) circle(d = width, $fn = 50); }
+            if (a == 90) pointed_arm(); else capsule(arm_length);
 }
 
 // Single support leg for Vertical Mode. Rather than three legs at fixed
@@ -1668,9 +1684,13 @@ module base_for_curve(points) {
             cube([clip_span, clip_span, clip_span]);
     }
 
+    // flip_foot spins just the foot 180 degrees about the leg, so the
+    // pointed arm's asymmetric mass can be swung to whichever side helps
+    // balance - it doesn't move the leg/attachment point itself.
     translate([p[0], p[1], leg_bottom])
-        linear_extrude(height = foot_height)
-            y_foot_2d(foot_arm_length, foot_width);
+        rotate([0, 0, flip_foot ? 180 : 0])
+            linear_extrude(height = foot_height)
+                y_foot_2d(foot_arm_length, foot_width);
 }
 
 /* Earlier foot design: a single, mostly-circular almond-shaped disk (still
@@ -1723,6 +1743,7 @@ leg_extension = ${params.legExtension};      // gap (mm) between the figure's lo
 foot_height = ${params.footHeight};        // height (thickness) of the foot (mm)
 foot_width = ${params.footWidth};         // width (mm) of each of the Y-shaped foot's three arms
 foot_arm_length = ${params.footArmLength};      // length (mm) of each of the Y-shaped foot's three arms, measured from its center - same for all three
+flip_foot = ${params.flipFoot};       // point the foot's pointed arm the other way (180 degrees) - the leg's attachment point doesn't move, only the foot; a quick way to shift its asymmetric mass to the other side for balance
 
 // Tip-to-tip length (mm) for the earlier, currently-unused round/almond disk
 // foot design - see the commented-out base_for_curve_disk_foot module below.
@@ -1772,7 +1793,7 @@ curve_points_mm = [
 ${SCAD_COMMON_MODULES}${vertical ? SCAD_VERTICAL_TAIL : SCAD_HORIZONTAL_TAIL}`
     }
     function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name(shapeLabel('front'))}-${name(shapeLabel('back'))}.scad` }
-    function toggleLegFields() { const on = $('scadAddLegs').checked; const vertical = state.orientation === 'vertical'; for (const id of ['scadLegWidth', 'scadLegExtension', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on; $('scadFootArmLength').disabled = !on || !vertical }
+    function toggleLegFields() { const on = $('scadAddLegs').checked; const vertical = state.orientation === 'vertical'; for (const id of ['scadLegWidth', 'scadLegExtension', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on; $('scadFootArmLength').disabled = !on || !vertical; $('scadFlipFoot').disabled = !on || !vertical }
     function openExportModal() {
       if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return }
       const vertical = state.orientation === 'vertical';
@@ -1787,6 +1808,8 @@ ${SCAD_COMMON_MODULES}${vertical ? SCAD_VERTICAL_TAIL : SCAD_HORIZONTAL_TAIL}`
       $('scadFootWidth').value = 7;
       $('scadFootArmLength').value = 15;
       $('scadFootArmLengthField').hidden = !vertical;
+      $('scadFlipFoot').checked = false;
+      $('scadFlipFootField').hidden = !vertical;
       toggleLegFields();
       $('exportModal').hidden = false;
     }
@@ -1807,7 +1830,7 @@ ${SCAD_COMMON_MODULES}${vertical ? SCAD_VERTICAL_TAIL : SCAD_HORIZONTAL_TAIL}`
       } catch (e) { body.textContent = 'Could not load instructions.' }
     }
     function closeHelpModal() { $('helpModal').hidden = true }
-    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legWidth: +$('scadLegWidth').value, legExtension: +$('scadLegExtension').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value, footArmLength: +$('scadFootArmLength').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
+    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legWidth: +$('scadLegWidth').value, legExtension: +$('scadLegExtension').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value, footArmLength: +$('scadFootArmLength').value, flipFoot: $('scadFlipFoot').checked }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
     function camPos(azimuth, elevation, distance) { return new THREE.Vector3(distance * Math.cos(elevation) * Math.sin(azimuth), distance * Math.cos(elevation) * Math.cos(azimuth), distance * Math.sin(elevation)) }
     function updateCamera() {
       if (!state.axisOrigin || !rendererFront) return;
