@@ -1100,7 +1100,7 @@
             min="0"></label>
         <label class="field"><span>Foot width (mm)</span><input type="number" id="scadFootWidth" step="0.5"
             min="0"></label>
-        <label class="field" id="scadFootLengthField"><span>Foot length (mm)</span><input type="number" id="scadFootLength" step="0.5"
+        <label class="field" id="scadFootArmLengthField"><span>Foot arm length (mm)</span><input type="number" id="scadFootArmLength" step="0.5"
             min="0.5"></label>
       </div>
       <div class="modal-foot">
@@ -1615,15 +1615,29 @@ function lowest_x_crossing(points, x0) =
     )
     [for (h = hits) if (h[2][2] == min_z) h][0];
 
+// Y-shaped foot: three arms of equal length (foot_arm_length) radiating from
+// a shared center at the same 90/210/330 degree layout as Horizontal Mode's
+// three legs, so this one consolidated foot fits the same Y-shaped slot on
+// the spinner mount that those three separate feet were designed for. Two
+// arms (210, 330) end rounded; the 90-degree arm (the same +y direction the
+// horizontal marker leg's almond foot points) tapers to a point instead -
+// a hull() from the full-width base circle down to a near-zero-radius tip,
+// the simplest way to get a smooth, symmetric point. All three arms share
+// the same length, per how a Y-slot's prongs are evenly matched.
+module y_foot_2d(arm_length, width) {
+    for (a = [90, 210, 330])
+        rotate(a - 90)
+            if (a == 90)
+                hull() { circle(d = width, $fn = 50); translate([0, arm_length]) circle(d = 0.01, $fn = 12); }
+            else
+                hull() { circle(d = width, $fn = 50); translate([0, arm_length]) circle(d = width, $fn = 50); }
+}
+
 // Single support leg for Vertical Mode. Rather than three legs at fixed
 // angles around the shape's center, this attaches where the lower curve
 // crosses x = 0 - centered left-to-right, and on the side of the loop that's
-// actually low - and drops straight down to a single broad foot. Same
-// curve-hugging technique as legs_for_curve's legs, just a single span,
-// capped with one foot instead of three round/almond feet - almond_2d again,
-// but with foot_width and foot_length both user-adjustable so the foot can
-// be made mostly circular (the two equal) with only a slight point, rather
-// than the sharp fixed-ratio almond used for the horizontal marker leg.
+// actually low - and drops straight down to the y_foot_2d foot above. Same
+// curve-hugging technique as legs_for_curve's legs, just a single span.
 // Takes the already-rotated curve (curve_points_mm_rotated), since the leg
 // has to be positioned and dropped in the same final frame the ribbon ends
 // up in after its own rotate() below, not the pre-rotation frame the ribbon
@@ -1656,8 +1670,38 @@ module base_for_curve(points) {
 
     translate([p[0], p[1], leg_bottom])
         linear_extrude(height = foot_height)
+            y_foot_2d(foot_arm_length, foot_width);
+}
+
+/* Earlier foot design: a single, mostly-circular almond-shaped disk (still
+   here, commented out rather than deleted, in case the Y-shaped foot above
+   doesn't work out and this is worth reverting to). Everything about leg
+   placement is identical - only the foot's 2D shape differs - so if you
+   bring this back, also comment out the base_for_curve above and rename
+   this one from base_for_curve_disk_foot back to base_for_curve.
+
+module base_for_curve_disk_foot(points) {
+    hit = lowest_x_crossing(points, 0);
+    i = hit[0];
+    t = hit[1];
+    p = hit[2];
+    floor_z_final = min([for (pt = points) pt[2]]) - wall_thickness / 2;
+    leg_bottom = floor_z_final - leg_extension;
+    clip_span = overall_width * 4;
+    leg_width_along_curve = max(leg_width - wall_thickness, 0);
+    span = leg_span_points(points, i, t, leg_width_along_curve / 2);
+
+    intersection() {
+        leg_ribbon_chain(span, leg_bottom);
+        translate([p[0] - clip_span / 2, p[1] - clip_span / 2, leg_bottom])
+            cube([clip_span, clip_span, clip_span]);
+    }
+
+    translate([p[0], p[1], leg_bottom])
+        linear_extrude(height = foot_height)
             almond_2d(foot_width, foot_length);
 }
+*/
 
 rotate([0, 0, 180]) rotate([90, 0, 0])
     parametric_ribbon(curve_points_mm);
@@ -1677,8 +1721,13 @@ leg_extension = ${params.legExtension};      // gap (mm) between the figure's lo
 
 /* [Foot] */
 foot_height = ${params.footHeight};        // height (thickness) of the foot (mm)
-foot_width = ${params.footWidth};         // foot diameter (mm) across the x-direction
-foot_length = ${params.footLength};        // foot length (mm) tip-to-tip across the y-direction - equal to foot_width for a plain circle; a different value pinches the top and bottom into a slight point (the "almond" shape), which always points along +/-y` : `/* [Legs] */
+foot_width = ${params.footWidth};         // width (mm) of each of the Y-shaped foot's three arms
+foot_arm_length = ${params.footArmLength};      // length (mm) of each of the Y-shaped foot's three arms, measured from its center - same for all three
+
+// Tip-to-tip length (mm) for the earlier, currently-unused round/almond disk
+// foot design - see the commented-out base_for_curve_disk_foot module below.
+// Only matters if you bring that design back.
+foot_length = 25;` : `/* [Legs] */
 add_legs = ${params.addLegs};       // add three support legs at 120-degree spacing
 leg_width = ${params.legWidth};        // true width (mm) of each leg where it meets the object, centered on the leg's position (half each direction) - includes the wall_thickness added by the rounded ends, so this is the actual measurable width, not just the arc walked along the curve
 leg_extension = ${params.legExtension};      // how far (mm) the legs extend below the lowest point of the figure
@@ -1723,7 +1772,7 @@ curve_points_mm = [
 ${SCAD_COMMON_MODULES}${vertical ? SCAD_VERTICAL_TAIL : SCAD_HORIZONTAL_TAIL}`
     }
     function scadFilename() { const name = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return `impossible-${name(shapeLabel('front'))}-${name(shapeLabel('back'))}.scad` }
-    function toggleLegFields() { const on = $('scadAddLegs').checked; const vertical = state.orientation === 'vertical'; for (const id of ['scadLegWidth', 'scadLegExtension', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on; $('scadFootLength').disabled = !on || !vertical }
+    function toggleLegFields() { const on = $('scadAddLegs').checked; const vertical = state.orientation === 'vertical'; for (const id of ['scadLegWidth', 'scadLegExtension', 'scadFootHeight', 'scadFootWidth']) $(id).disabled = !on; $('scadFootArmLength').disabled = !on || !vertical }
     function openExportModal() {
       if (!state.mesh) { $('status').textContent = 'LOAD FRONT + BACK FIRST'; return }
       const vertical = state.orientation === 'vertical';
@@ -1735,9 +1784,9 @@ ${SCAD_COMMON_MODULES}${vertical ? SCAD_VERTICAL_TAIL : SCAD_HORIZONTAL_TAIL}`
       $('scadLegWidth').value = 6;
       $('scadLegExtension').value = 0;
       $('scadFootHeight').value = vertical ? 3 : 2;
-      $('scadFootWidth').value = vertical ? 30 : 7;
-      $('scadFootLength').value = 25;
-      $('scadFootLengthField').hidden = !vertical;
+      $('scadFootWidth').value = 7;
+      $('scadFootArmLength').value = 15;
+      $('scadFootArmLengthField').hidden = !vertical;
       toggleLegFields();
       $('exportModal').hidden = false;
     }
@@ -1758,7 +1807,7 @@ ${SCAD_COMMON_MODULES}${vertical ? SCAD_VERTICAL_TAIL : SCAD_HORIZONTAL_TAIL}`
       } catch (e) { body.textContent = 'Could not load instructions.' }
     }
     function closeHelpModal() { $('helpModal').hidden = true }
-    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legWidth: +$('scadLegWidth').value, legExtension: +$('scadLegExtension').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value, footLength: +$('scadFootLength').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
+    function downloadScad() { const params = { overallWidth: +$('scadOverallWidth').value, overallHeight: +$('scadRibbonThickness').value, wallThickness: +$('scadWallThickness').value, addLegs: $('scadAddLegs').checked, legWidth: +$('scadLegWidth').value, legExtension: +$('scadLegExtension').value, footHeight: +$('scadFootHeight').value, footWidth: +$('scadFootWidth').value, footArmLength: +$('scadFootArmLength').value }; const blob = new Blob([generateScad(params)], { type: 'text/plain' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = scadFilename(); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); closeExportModal() }
     function camPos(azimuth, elevation, distance) { return new THREE.Vector3(distance * Math.cos(elevation) * Math.sin(azimuth), distance * Math.cos(elevation) * Math.cos(azimuth), distance * Math.sin(elevation)) }
     function updateCamera() {
       if (!state.axisOrigin || !rendererFront) return;
