@@ -1,1 +1,32 @@
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1116" height="809"><defs><clipPath id="xmDGTIBWaTrc"><path fill="none" stroke="none" d=" M 0 0 L 1116 0 L 1116 809 L 0 809 L 0 0 Z"/></clipPath></defs><g transform="scale(1,1)" clip-path="url(#xmDGTIBWaTrc)"><g><rect fill="rgb(255,255,255)" stroke="none" x="0" y="0" width="1116" height="809" fill-opacity="1"/><path fill="none" stroke="rgb(0,103,88)" paint-order="fill stroke markers" d=" M 728.7228122784743 402.62542689762836 C 728.7228122784743 444.3303676486772 694.9142778451618 478.13890208198984 653.2093370941129 478.13890208198984 C 611.5043963430641 478.13890208198984 577.6958619097514 444.3303676486772 577.6958619097514 402.62542689762836 C 577.6958619097514 360.92048614657944 611.5043963430641 327.1119517132669 653.2093370941129 327.1119517132669 C 694.9142778451618 327.1119517132669 728.7228122784743 360.92048614657944 728.7228122784743 402.62542689762836 Z" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 446.9026862343458 327.1119517132669 L 446.9026862343458 478.13890208198984" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 577.6958619097514 402.62542689762836 L 446.9026862343458 478.13890208198984" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 446.9026862343458 327.1119517132669 L 577.6958619097514 402.62542689762836" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 728.7228122784743 402.62542689762836 L 804.2362874628358 478.13890208198984" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 804.2362874628358 478.13890208198984 L 879.7497626471973 402.62542689762836" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 879.7497626471973 402.62542689762836 L 804.2362874628358 327.1119517132669" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/><path fill="none" stroke="rgb(0,0,0)" paint-order="fill stroke markers" d=" M 728.7228122784743 402.62542689762836 L 804.2362874628358 327.1119517132669" stroke-opacity="0.6980392156862745" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1116 809">
+  <!-- Generator: Adobe Illustrator 30.8.2, SVG Export Plug-In . SVG Version: 2.1.4 Build 7)  -->
+  <defs>
+    <style>
+      .st0 {
+        stroke: #000;
+        stroke-opacity: .7;
+      }
+
+      .st0, .st1 {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2.5px;
+      }
+
+      .st1 {
+        stroke: #006758;
+        stroke-opacity: .8;
+      }
+    </style>
+  </defs>
+  <path class="st1" d="M728.72,402.63c0,41.7-33.81,75.51-75.51,75.51s-75.51-33.81-75.51-75.51,33.81-75.51,75.51-75.51,75.51,33.81,75.51,75.51Z"/>
+  <path class="st0" d="M446.9,327.11v151.03"/>
+  <path class="st0" d="M577.7,402.63l-130.79,75.51"/>
+  <path class="st0" d="M446.9,327.11l130.79,75.51"/>
+  <path class="st0" d="M728.72,402.63l75.51,75.51"/>
+  <path class="st0" d="M804.24,478.14l75.51-75.51"/>
+  <path class="st0" d="M879.75,402.63l-75.51-75.51"/>
+  <path class="st0" d="M728.72,402.63l75.51-75.51"/>
+</svg>
