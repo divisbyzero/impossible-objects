@@ -1149,7 +1149,7 @@
   </div>
   <script type="module">
     import * as THREE from './three.module.js';
-    const SVG_FILES = ['Apple.svg', 'Arrow (Curved).svg', 'Arrow (Left).svg', 'Arrow (Up).svg', 'Banana.svg', 'Baseball Hat.svg', 'Batman Logo.svg', 'Bell.svg', 'Cactus.svg', 'Car.svg', 'Castle.svg', 'Chick.svg', 'Chicken.svg', 'Circle Square Circle.svg', 'Circle Square Triangle.svg', 'Circle.svg', 'Circles (Four).svg', 'Circles (Three).svg', 'Circles (Two).svg', 'Cloud.svg', 'Cowboy Boot.svg', 'Cowboy Hat.svg', 'Crown.svg', 'Duck.svg', 'Egg.svg', 'Fire.svg', 'Fish.svg', 'Foot.svg', 'Hand.svg', 'Heart.svg', 'Hexagon.svg', 'House.svg', 'Ice Cream Cone.svg', 'Infinity.svg', 'Leaf.svg', 'Light Bulb.svg', 'Lightning.svg', 'Mitten.svg', 'Pear.svg', 'Penguin.svg', 'Pentagon.svg', 'Quill.svg', 'Rabbit.svg', 'Shield.svg', 'Sneaker.svg', 'Sock.svg', 'Square (Diamond).svg', 'Square Circle Square.svg', 'Square.svg', 'Sword.svg', 'Thumbs Up (Down).svg', 'Tree.svg', 'Triangle Circle Square.svg', 'Triangle.svg', 'Tulip.svg', 'Turtle.svg', 'Water Drop.svg', 'Whale.svg'];
+    const SVG_FILES = ['Apple.svg', 'Arrow (Curved).svg', 'Arrow (Left).svg', 'Arrow (Up).svg', 'Banana.svg', 'Baseball Hat.svg', 'Batman Logo.svg', 'Bell.svg', 'Cactus.svg', 'Car.svg', 'Castle.svg', 'Chick.svg', 'Chicken.svg', 'Circle Square Circle.svg', 'Circle Square Triangle.svg', 'Circle.svg', 'Circles (Four).svg', 'Circles (Three).svg', 'Circles (Two).svg', 'Cloud.svg', 'Cowboy Boot.svg', 'Cowboy Hat.svg', 'Crown.svg', 'Duck.svg', 'Egg.svg', 'Fire.svg', 'Fish.svg', 'Foot.svg', 'Hand.svg', 'Heart.svg', 'Hexagon.svg', 'House.svg', 'Ice Cream Cone.svg', 'Infinity.svg', 'Leaf.svg', 'Light Bulb.svg', 'Lightning.svg', 'Mitten.svg', 'Pear.svg', 'Penguin.svg', 'Pentagon.svg', 'Quill.svg', 'Rabbit.svg', 'Shield.svg', 'Sneaker.svg', 'Sock.svg', 'Square (Diamond).svg', 'Square Circle Square.svg', 'Square Triangle Circle.svg', 'Square.svg', 'Sword.svg', 'Thumbs Up (Down).svg', 'Tree.svg', 'Triangle Circle Square.svg', 'Triangle.svg', 'Tulip.svg', 'Turtle.svg', 'Water Drop.svg', 'Whale.svg'];
     const DEMOS = { 'Arrow 3.svg': { viewBox: '0 0 612 792', markup: '<path d="M305 190 L183 350 C174 362 184 378 198 375 L239 368 C249 366 258 374 258 384 L258 583 C258 592 265 599 274 599 L362 599 C371 599 378 592 378 583 L378 384 C378 374 387 366 397 368 L438 375 C452 378 462 362 453 350 L331 190 C325 182 311 182 305 190 Z"/>' }, 'Car.svg': { viewBox: '0 0 612 792', markup: '<path d="M180 324 C170 325 143 327 138 330 C133 333 130 348 130 357 C120 364 124 374 134 377 L174 377 C176 395 188 402 200 402 C213 402 224 394 226 377 L351 378 C353 395 365 402 378 402 C391 402 402 395 404 378 L424 378 C433 377 439 371 439 359 C439 348 433 340 423 336 C412 332 366 329 353 324 C342 319 323 294 313 290 C299 284 247 285 234 290 C220 296 198 315 180 324 Z"/>' } };
     // widthMM/heightMM/thicknessMM are the real-world (mm) values the user sets; the 3D
     // preview stays in the app's normalized coordinate space, so heightMM is converted via
@@ -1184,8 +1184,7 @@
     function isEmptyPath(el) { return el.tagName.toLowerCase() === 'path' && !(el.getAttribute('d') || '').trim() }
     function visibleCandidates(root, viewBox) { const [, , vw, vh] = viewBox.split(/\s+/).map(Number); return Array.from(root.querySelectorAll(SHAPE_SELECTOR)).filter(el => !el.closest('defs, clipPath, symbol, mask, pattern') && !isBackgroundRect(el, vw, vh) && !isDesmosChrome(el) && !isEmptyPath(el)) }
     function sampleSegmentPoints(el, count = 400) { const total = el.getTotalLength(), pts = []; for (let i = 0; i <= count; i++) { const p = shapePoint(el, total * i / count); pts.push([p.x, p.y]) } return pts }
-    function stitchSegments(segments) { const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]), eps = 1e-6, used = segments.map(() => false); let chain = segments[0].slice(); used[0] = true; for (let remaining = segments.length - 1; remaining > 0; remaining--) { const tail = chain[chain.length - 1]; let best = -1, bestFlip = false, bestDist = Infinity; for (let i = 0; i < segments.length; i++) { if (used[i]) continue; const seg = segments[i], dStart = dist(tail, seg[0]), dEnd = dist(tail, seg[seg.length - 1]); if (dStart < bestDist) { bestDist = dStart; best = i; bestFlip = false } if (dEnd < bestDist) { bestDist = dEnd; best = i; bestFlip = true } } const pts = bestFlip ? segments[best].slice().reverse() : segments[best]; for (const p of pts) if (dist(chain[chain.length - 1], p) > eps) chain.push(p); used[best] = true } return chain }
-    function buildClosedPathD(points) { return 'M ' + points.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(' L ') + ' Z' }
+    function buildOpenPathD(points) { return 'M ' + points.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(' L ') }
     function previewBox(data) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', data.viewBox); svg.style.position = 'absolute'; svg.style.visibility = 'hidden'; svg.innerHTML = data.previewMarkup || data.markup; document.body.appendChild(svg); try { const b = svg.getBBox(), p = Math.max(b.width, b.height) * .08; return `${b.x - p} ${b.y - p} ${b.width + 2 * p} ${b.height + 2 * p}` } finally { svg.remove() } }
     function preview(data) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${previewBox(data)}" preserveAspectRatio="xMidYMid meet">${data.previewMarkup || data.markup}</svg>` }
     function previewTransformCSS(which) { const f = state.transform[which], parts = []; if (f.flipH) parts.push('scaleX(-1)'); if (f.flipV) parts.push('scaleY(-1)'); return parts.join(' ') }
@@ -1229,13 +1228,13 @@
         const previewMarkup = candidates.map(el => el.outerHTML).join('');
         if (candidates.length === 1) return { viewBox, markup: candidates[0].outerHTML, previewMarkup };
         // Multiple curve pieces (e.g. several GeoGebra objects making up one outline):
-        // sample each, then stitch them end-to-end into a single closed loop, snapping
-        // to whichever free endpoint is nearest even if the pieces don't meet exactly.
-        // This stitched path drives the 3D geometry, which needs one continuous outline;
-        // the preview keeps the original separate shapes so it doesn't show the
-        // straight connector segments stitching introduces between them.
-        const chain = stitchSegments(candidates.map(el => sampleSegmentPoints(el)));
-        return { viewBox, markup: `<path d="${buildClosedPathD(chain)}"/>`, previewMarkup };
+        // sample each and keep them as separate polylines. sample() only needs the upper
+        // and lower envelope at each x, which it takes over all pieces at once, so they
+        // never have to be stitched into one loop - stitching by nearest endpoint breaks
+        // when a piece touches another mid-segment (a square's corner meeting the middle
+        // of a triangle's side), since the connector it invents cuts across the outline.
+        const pieces = candidates.map(el => sampleSegmentPoints(el));
+        return { viewBox, markup: `<path d="${pieces.map(buildOpenPathD).join(' ')}"/>`, pieces, previewMarkup };
       } finally { measure.remove() }
     }
     // Cached per name (as a Promise, so concurrent requests for the same shape share one
@@ -1278,21 +1277,28 @@
     }
     function closeShapePicker() { $('shapePickerModal').hidden = true; pickerWhich = null }
     function sample(data, count = 248, baseRotate180 = false, userFlags = {}) {
-      const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
-      svg.setAttribute('viewBox', data.viewBox);
-      svg.innerHTML = data.markup;
-      document.body.appendChild(svg);
-      const shape = svg.querySelector(SHAPE_SELECTOR), n = Math.max(count * 8, 2000), total = shape.getTotalLength(), raw = [];
-      for (let i = 0; i < n; i++) { const p = shapePoint(shape, total * i / n); raw.push([p.x, p.y]) }
-      svg.remove();
-      let minX = Infinity, maxX = -Infinity;
-      for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]) }
-      const span = maxX - minX || 1, minY = Math.min(...raw.map(p => p[1])), maxY = Math.max(...raw.map(p => p[1])), scale = .65 / span, cy = (minY + maxY) / 2, normalized = raw.map(p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale]);
+      // A single shape is one closed loop; a multi-piece shape (see parse()) is a set of
+      // separate polylines whose segments are pooled without joining one piece to the next.
+      let pieces = data.pieces, closed = false;
+      if (!pieces) {
+        const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('viewBox', data.viewBox);
+        svg.innerHTML = data.markup;
+        document.body.appendChild(svg);
+        const shape = svg.querySelector(SHAPE_SELECTOR), n = Math.max(count * 8, 2000), total = shape.getTotalLength(), raw = [];
+        for (let i = 0; i < n; i++) { const p = shapePoint(shape, total * i / n); raw.push([p.x, p.y]) }
+        svg.remove();
+        pieces = [raw]; closed = true;
+      }
+      const raw = pieces.flat();
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const p of raw) { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]); minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]) }
+      const span = maxX - minX || 1, scale = .65 / span, cy = (minY + maxY) / 2, toNorm = p => [(p[0] - (minX + maxX) / 2) * scale, -(p[1] - cy) * scale];
       let negateX = baseRotate180, negateY = baseRotate180;
       if (userFlags.flipH) negateX = !negateX;
       if (userFlags.flipV) negateY = !negateY;
-      if (negateX || negateY) normalized.forEach(p => { if (negateX) p[0] *= -1; if (negateY) p[1] *= -1 });
-      const segments = normalized.map((p, i) => [p, normalized[(i + 1) % normalized.length]]);
+      const normPieces = pieces.map(piece => piece.map(p => { const q = toNorm(p); if (negateX) q[0] *= -1; if (negateY) q[1] *= -1; return q })), normalized = normPieces.flat();
+      const segments = normPieces.flatMap(piece => piece.slice(closed ? 0 : 1).map((p, i) => closed ? [p, piece[(i + 1) % piece.length]] : [piece[i], p]));
       const yAt = (x, upper) => {
         const hits = [];
         for (const [[x1, y1], [x2, y2]] of segments) {
